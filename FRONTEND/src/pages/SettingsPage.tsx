@@ -6,7 +6,7 @@ import MainSidebar from "@/components/layout/Sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useResponsiveSidebar } from "@/hooks/use-responsive-sidebar";
 import { motion } from "framer-motion";
-import { Settings, Bell, Shield, Palette, Globe, Sliders } from "lucide-react";
+import { Settings, Bell, Shield, Palette, Globe, Sliders, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -34,7 +34,7 @@ const SettingsPage = () => {
       title: "Settings saved",
       description: "Your settings have been updated successfully",
       variant: "success",
-  duration: 1000,
+      duration: 1000,
     });
   };
 
@@ -60,23 +60,23 @@ const SettingsPage = () => {
   return (
     <SidebarProvider defaultOpen={!isMobile}>
       <div className="flex w-full min-h-screen bg-gradient-to-br from-[#001430] to-[#002040] font-sans">
-        <MainSidebar 
-          open={sidebarOpen} 
+        <MainSidebar
+          open={sidebarOpen}
           onOpenChange={setSidebarOpen}
           onCollapseChange={setSidebarCollapsed}
         />
-        
-        <div 
+
+        <div
           className="flex flex-col flex-1 transition-all duration-300 ease-in-out"
-          style={{ 
+          style={{
             width: "100%",
             marginLeft: isMobile ? 0 : sidebarCollapsed ? '70px' : '250px',
             paddingBottom: isMobile ? '80px' : '0'
           }}
         >
-          <Header 
+          <Header
             onMenuClick={handleMenuClick}
-             
+
           />
 
           <div className="flex flex-col p-4 sm:p-6">
@@ -84,8 +84,8 @@ const SettingsPage = () => {
               <Settings className="mr-2 text-[#01C8A9]" />
               Settings
             </h1>
-            
-            <motion.div 
+
+            <motion.div
               variants={containerVariants}
               initial="hidden"
               animate="visible"
@@ -99,16 +99,16 @@ const SettingsPage = () => {
                   </div>
                   <h3 className="text-white font-medium text-lg">Notifications</h3>
                 </div>
-                
+
                 <div className="space-y-4">
                   <div className="flex items-center justify-between p-3 bg-[#031123]/50 rounded-lg hover:bg-[#041b36] transition-colors">
                     <div>
                       <Label htmlFor="email-notifications" className="text-white">Email Notifications</Label>
                       <p className="text-sm text-gray-400">Receive updates about your signatures via email</p>
                     </div>
-                    <Switch 
-                      id="email-notifications" 
-                      checked={emailNotifications} 
+                    <Switch
+                      id="email-notifications"
+                      checked={emailNotifications}
                       onCheckedChange={setEmailNotifications}
                     />
                   </div>
@@ -117,13 +117,13 @@ const SettingsPage = () => {
                       <Label htmlFor="browser-notifications" className="text-white">Browser Notifications</Label>
                       <p className="text-sm text-gray-400">Get notified in your browser for important events</p>
                     </div>
-                    <Switch 
-                      id="browser-notifications" 
-                      checked={browserNotifications} 
+                    <Switch
+                      id="browser-notifications"
+                      checked={browserNotifications}
                       onCheckedChange={setBrowserNotifications}
                     />
                   </div>
-                  <div className="flex items-center justify-between p-3 bg-[#031123]/50 rounded-lg hover:bg-[#041b36] transition-colors">
+                  {/* <div className="flex items-center justify-between p-3 bg-[#031123]/50 rounded-lg hover:bg-[#041b36] transition-colors">
                     <div>
                       <Label htmlFor="weekly-digest" className="text-white">Weekly Digest</Label>
                       <p className="text-sm text-gray-400">Get a weekly summary of your signature performance</p>
@@ -133,12 +133,12 @@ const SettingsPage = () => {
                       checked={weeklyDigest} 
                       onCheckedChange={setWeeklyDigest}
                     />
-                  </div>
+                  </div> */}
                 </div>
               </motion.div>
-              
+
               {/* Security Settings */}
-              <motion.div variants={itemVariants} className="bg-gradient-to-br from-[#031123] to-[#051b36] border border-[#112F59] rounded-lg p-6 shadow-lg">
+              {/* <motion.div variants={itemVariants} className="bg-gradient-to-br from-[#031123] to-[#051b36] border border-[#112F59] rounded-lg p-6 shadow-lg">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500/30 to-purple-700/30 flex items-center justify-center">
                     <Shield className="w-5 h-5 text-purple-400" />
@@ -167,39 +167,61 @@ const SettingsPage = () => {
                     </Button>
                   </div>
                 </div>
-              </motion.div>
-              
+              </motion.div> */}
+
               {/* Appearance Settings */}
-              <motion.div variants={itemVariants} className="bg-gradient-to-br from-[#031123] to-[#051b36] border border-[#112F59] rounded-lg p-6 shadow-lg">
+
+              {/* Overlay with lighter blur and transparency */}
+
+
+              {/* Main Card Content */}
+              <motion.div
+                variants={itemVariants}
+                className="bg-gradient-to-br from-[#031123] to-[#051b36] border border-[#112F59] rounded-lg p-6 shadow-lg relative z-10 pointer-events-none"
+              >
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-teal-500/30 to-teal-700/30 flex items-center justify-center">
                     <Palette className="w-5 h-5 text-teal-400" />
                   </div>
                   <h3 className="text-white font-medium text-lg">Appearance</h3>
                 </div>
-                
-                <div className="space-y-4">
-                  <div className="p-3 bg-[#031123]/50 rounded-lg hover:bg-[#041b36] transition-colors">
-                    <Label className="text-white mb-2 block">Theme Preference</Label>
-                    <RadioGroup defaultValue={theme} onValueChange={setTheme} className="flex flex-wrap gap-4">
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="light" id="light" />
-                        <Label htmlFor="light" className="text-gray-400">Light</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="dark" id="dark" />
-                        <Label htmlFor="dark" className="text-gray-400">Dark</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="system" id="system" />
-                        <Label htmlFor="system" className="text-gray-400">System</Label>
-                      </div>
-                    </RadioGroup>
+                <div className="relative">
+                  <div className="absolute inset-0 z-20 bg-black/30 backdrop-blur-sm flex items-center justify-center rounded-lg">
+                    <div className="flex items-center gap-2 text-white font-semibold text-lg">
+                      <Lock className="w-5 h-5 text-white" />
+                      Coming Soon
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="p-3 bg-[#031123]/50 rounded-lg hover:bg-[#041b36] transition-colors">
+                      <Label className="text-white mb-2 block">Theme Preference</Label>
+                      <RadioGroup
+                        defaultValue={theme}
+                        onValueChange={setTheme}
+                        className="flex flex-wrap gap-4"
+                      >
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="light" id="light" />
+                          <Label htmlFor="light" className="text-gray-400">Light</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="dark" id="dark" />
+                          <Label htmlFor="dark" className="text-gray-400">Dark</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="system" id="system" />
+                          <Label htmlFor="system" className="text-gray-400">System</Label>
+                        </div>
+                      </RadioGroup>
+                    </div>
                   </div>
                 </div>
               </motion.div>
-              
-              {/* Language Settings */}
+
+
+
+
               <motion.div variants={itemVariants} className="bg-gradient-to-br from-[#031123] to-[#051b36] border border-[#112F59] rounded-lg p-6 shadow-lg">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-500/30 to-yellow-700/30 flex items-center justify-center">
@@ -207,20 +229,28 @@ const SettingsPage = () => {
                   </div>
                   <h3 className="text-white font-medium text-lg">Language & Region</h3>
                 </div>
-                
-                <div className="space-y-4">
-                  <div className="p-3 bg-[#031123]/50 rounded-lg hover:bg-[#041b36] transition-colors">
-                    <Label className="text-white mb-2 block">Language</Label>
-                    <select className="w-full sm:w-auto bg-[#001430] border border-[#112F59] text-white rounded p-2">
-                      <option value="en">English</option>
-                      <option value="fr">French</option>
-                      <option value="es">Spanish</option>
-                      <option value="de">German</option>
-                    </select>
+
+                <div className="relative">
+                  <div className="absolute inset-0 z-20 bg-black/30 backdrop-blur-sm flex items-center justify-center rounded-lg">
+                    <div className="flex items-center gap-2 text-white font-semibold text-lg">
+                      <Lock className="w-5 h-5 text-white" />
+                      Coming Soon
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="p-3 bg-[#031123]/50 rounded-lg hover:bg-[#041b36] transition-colors">
+                      <Label className="text-white mb-2 block">Language</Label>
+                      <select className="w-full sm:w-auto bg-[#001430] border border-[#112F59] text-white rounded p-2">
+                        <option value="en">English</option>
+                        <option value="fr">French</option>
+                        <option value="es">Spanish</option>
+                        <option value="de">German</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
               </motion.div>
-              
+
               {/* Advanced Settings */}
               <motion.div variants={itemVariants} className="bg-gradient-to-br from-[#031123] to-[#051b36] border border-[#112F59] rounded-lg p-6 shadow-lg">
                 <div className="flex items-center gap-3 mb-4">
@@ -229,21 +259,29 @@ const SettingsPage = () => {
                   </div>
                   <h3 className="text-white font-medium text-lg">Advanced</h3>
                 </div>
-                
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-3 bg-[#031123]/50 rounded-lg hover:bg-[#041b36] transition-colors">
-                    <div>
-                      <Label htmlFor="data-collection" className="text-white">Data Collection</Label>
-                      <p className="text-sm text-gray-400">Allow anonymous usage data collection</p>
+
+                <div className="relative">
+                  <div className="absolute inset-0 z-20 bg-black/30 backdrop-blur-sm flex items-center justify-center rounded-lg">
+                    <div className="flex items-center gap-2 text-white font-semibold text-lg">
+                      <Lock className="w-5 h-5 text-white" />
+                      Coming Soon
                     </div>
-                    <Switch id="data-collection" defaultChecked />
+                  </div>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-3 bg-[#031123]/50 rounded-lg hover:bg-[#041b36] transition-colors">
+                      <div>
+                        <Label htmlFor="data-collection" className="text-white">Data Collection</Label>
+                        <p className="text-sm text-gray-400">Allow anonymous usage data collection</p>
+                      </div>
+                      <Switch id="data-collection" defaultChecked />
+                    </div>
                   </div>
                 </div>
               </motion.div>
-              
+
               {/* Save Button */}
               <motion.div variants={itemVariants} className="flex justify-end">
-                <Button 
+                <Button
                   onClick={handleSaveSettings}
                   className="bg-gradient-to-r from-[#01C8A9] to-[#01a088] hover:opacity-90 text-white"
                 >
@@ -253,8 +291,8 @@ const SettingsPage = () => {
             </motion.div>
           </div>
         </div>
-      </div>
-    </SidebarProvider>
+      </div >
+    </SidebarProvider >
   );
 };
 

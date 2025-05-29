@@ -111,13 +111,13 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, hideAccount = false }) => 
                       <User size={16} className="mr-2" />
                       My Account
                     </Link>
-                    {/* <Link 
+                    <Link 
                       to="/user/settings" 
                       className="flex items-center px-4 py-2 text-sm text-white hover:bg-[#112F59]/50 transition-colors"
                     >
                       <Settings size={16} className="mr-2" />
                       Settings
-                    </Link> */}
+                    </Link>
                     {/* <Link 
                       to="/user/support" 
                       className="flex items-center px-4 py-2 text-sm text-white hover:bg-[#112F59]/50 transition-colors"
