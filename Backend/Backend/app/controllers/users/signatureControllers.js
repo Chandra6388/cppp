@@ -475,27 +475,61 @@ class Signature {
   async trackClick(req, res) {
     try {
       const { url, btnName, userId, linkType, signatureId } = req.query;
+
       if (!url || !btnName) {
         return res.send({ status: false, message: 'Missing URL or Button Name' });
       }
+
       const userAgent = req.headers['user-agent'];
       const parser = new UAParser(userAgent);
       const result = parser.getResult();
+
       let deviceType = result.device?.type ?? 'unknown';
       if ((deviceType === 'unknown' || deviceType === 'desktop') && userAgent.includes("Android") && !userAgent.includes("Mobile")) {
         deviceType = 'tablet';
       } else if (deviceType === 'unknown') {
         deviceType = 'desktop';
       }
+
       const os = result.os?.name || 'Unknown OS';
       const browser = result.browser?.name || 'Unknown Browser';
-      await TrackBtnClickedDB.create({ BtnName: btnName, ClickCount: 1, userId: userId, signatureId: signatureId, linkType, deviceType, os, browser });
-      return res.redirect(decodeURIComponent(url));
+
+      // Fix: Ensure URL includes protocol
+      let finalUrl = decodeURIComponent(url);
+      if (!/^https?:\/\//i.test(finalUrl)) {
+        finalUrl = `https://${finalUrl}`;
+      }
+
+      // Optional: Validate final URL
+      try {
+        new URL(finalUrl);
+      } catch (err) {
+        return res.send({ status: false, message: 'Invalid final URL format' });
+      }
+
+      // Save to DB
+      await TrackBtnClickedDB.create({
+        BtnName: btnName,
+        ClickCount: 1,
+        userId,
+        signatureId,
+        linkType,
+        deviceType,
+        os,
+        browser
+      });
+
+      return res.redirect(finalUrl);
     } catch (error) {
       console.error('Error tracking button click:', error);
-      return res.send({ status: false, message: 'Internal Server Error' });
+      return res.status(500).send({
+        status: false,
+        message: 'Internal Server Error',
+        error: error.message // Add error message for debugging
+      });
     }
   }
+
 }
 
 module.exports = new Signature();
