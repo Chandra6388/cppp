@@ -66,16 +66,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, hideAccount = false }) => 
           {/* Welcome message */}
           <h2 className="text-white font-medium hidden sm:block">Welcome, {displayName}</h2>
 
-          {!isMobile && (
-            <div className="relative max-w-md w-80 hidden md:block ml-6">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-              <Input
-                type="search"
-                placeholder="Search..."
-                className="pl-8 bg-[#001430] border-[#112F59] text-white w-full"
-              />
-            </div>
-          )}
+         
         </div>
 
         <div className="flex items-center gap-2">

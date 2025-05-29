@@ -79,7 +79,14 @@ const SignatureEditorPageRedesigned = () => {
   const [getSelectedTemplateID, setSelectedTemplateID] = useState<string>("")
   const [getSingleSignatureData, setSingleSignatureData] = useState<SingleSignature | null>(null)
   const [selectedSocialMedia, setSelectedSocialMedia] = useState<SocialMediaOption[]>([{ id: "btn-1", type: "Facebook", link: "", icon: "" }])
-  const [selectedButtons, setSelectedButtons] = useState<ButtonOption[]>([{ id: "button-1", text: "Join Meeting", type: "join_meeting", connect_with: "", color: "bg-green-500", fontStyle: "normal" }]);
+  const [selectedButtons, setSelectedButtons] = useState<ButtonOption[]>([{
+    id: "button-1",
+    text: "Join Meeting",
+    type: "join_meeting",
+    connect_with: "",
+    color: "bg-green-500",
+    fontStyle: "normal"
+  }]);
   const [selectedBackground, setSelectedBackground] = useState<BackgroundOption | null>({ id: 'white', background_type: 'color', background_value: '#ffffff', label: 'White' });
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const [showCropper, setShowCropper] = useState(false);
@@ -97,7 +104,6 @@ const SignatureEditorPageRedesigned = () => {
     headshot_url: userDetails?.profile_img,
     address: `${userDetails?.address || ""} ${userDetails?.country || ""}`
   });
-
 
   useEffect(() => {
     if (location?.state?.type == "edit") {
@@ -137,7 +143,6 @@ const SignatureEditorPageRedesigned = () => {
   const handleMenuClick = () => {
     setSidebarOpen(true);
   };
-
 
   const validation = () => {
     for (const key in formData) {
@@ -254,20 +259,22 @@ const SignatureEditorPageRedesigned = () => {
   };
 
   const handleAddButton = () => {
+    const usedTypes = selectedButtons.map((btn) => btn.type);
+    const nextType = availableButtonTypes.find((opt) => !usedTypes.includes(opt.type));
     if (selectedButtons.length >= 4) {
       toast({
         title: "Limit Reached",
-        description: "You can add a maximum of 4 action buttons to your email signature.",
+        description: "You can add upto 4 btn in your signature.",
         variant: "warning",
         duration: 1000,
       });
-
-      return
+      return;
     }
+
     const newButton = {
       id: `button-${Date.now()}`,
-      text: "Join Meeting",
-      type: "join_meeting",
+      text: nextType.text,
+      type: nextType.type,
       connect_with: "",
       color: "bg-green-500",
       fontStyle: "normal" as const
@@ -275,32 +282,39 @@ const SignatureEditorPageRedesigned = () => {
 
     const updatedButtons = [...selectedButtons, newButton];
     setSelectedButtons(updatedButtons);
-    setBtnActiveTab(newButton.id);
+    setBtnActiveTab(newButton.id); // Default to newly added tab
   };
 
 
   const handleAddSocialMedia = () => {
-    if (selectedSocialMedia.length >= 5) {
+    const usedTypes = selectedSocialMedia.map((item) => item.type);
+
+    const nextType = availableSocialMediaTypes.find(
+      (type) => !usedTypes.includes(type)
+    );
+
+    if (!nextType) {
       toast({
         title: "Limit Reached",
-        description: "You can add up to 4 social media links to your signature.",
+        description: "All available social media types are already added.",
         variant: "warning",
         duration: 1000,
       });
-
-      return
+      return;
     }
-    const newButton = {
-      id: `button-${Date.now()}`,
+
+    const newItem = {
+      id: `social-${Date.now()}`,
       link: "",
-      type: "Facebook",
-      icon: ""
+      type: nextType,
+      icon: "", // if you use icons
     };
 
-    const updatedSocialMedia = [...selectedSocialMedia, newButton];
+    const updatedSocialMedia = [...selectedSocialMedia, newItem];
     setSelectedSocialMedia(updatedSocialMedia);
-    setSocialMediaActiveTab(newButton.id);
+    setSocialMediaActiveTab(newItem.id);
   };
+
 
   const handleRemoveSocialMedia = (id: string) => {
     const updatedSocialMedia = selectedSocialMedia.filter((item) => item.id !== id);
@@ -409,8 +423,6 @@ const SignatureEditorPageRedesigned = () => {
       </a>
     `;
   }).join("");
-
-
 
   const socialMediaIcons = {
     "Facebook": "https://los-static.s3.us-east-1.amazonaws.com/tv/s-icon/ic-facebook.png",
@@ -607,7 +619,6 @@ const SignatureEditorPageRedesigned = () => {
 </table>
 `
 
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -623,7 +634,6 @@ const SignatureEditorPageRedesigned = () => {
   const onCropComplete = useCallback((_croppedArea: Area, croppedAreaPixels: Area) => {
     setCroppedAreaPixels(croppedAreaPixels);
   }, []);
-
 
   const getCroppedImg = (imageSrc: string, crop: Area): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -668,7 +678,6 @@ const SignatureEditorPageRedesigned = () => {
       });
   };
 
-
   const handleCropApply = async () => {
     if (!cropSrc || !croppedAreaPixels) return;
     const croppedImage = await getCroppedImg(cropSrc, croppedAreaPixels);
@@ -680,7 +689,6 @@ const SignatureEditorPageRedesigned = () => {
     setShowCropper(false);
     setCropSrc(null);
   };
-
 
   const formField = [
     {
@@ -734,6 +742,23 @@ const SignatureEditorPageRedesigned = () => {
     },
 
   ]
+
+
+  const availableButtonTypes = [
+    { text: "Contact Us", type: "contact_us" },
+    { text: "Join Meeting", type: "join_meeting" },
+    { text: "Visit Website", type: "visit_website" },
+    { text: "Book Meeting", type: "book_meeting" },
+    { text: "Leave Review", type: "leave_review" },
+  ];
+
+  const availableSocialMediaTypes = [
+    "Instagram",
+    "Facebook",
+    "Twitter",
+    "Linkedin",
+    "Whatsapp",
+  ];
 
 
   return (
@@ -867,13 +892,7 @@ const SignatureEditorPageRedesigned = () => {
                                     >
                                       Cancel
                                     </button>
-                                    {/* <button
-                                    onClick={handleCropApply}
-                                    variant="darkOutline"
-                                    className="text-white flex items-center gap-1"
-                                  >
-                                    Apply
-                                  </button> */}
+
                                     <Button
                                       variant="teal"
                                       onClick={handleCropApply}
@@ -954,11 +973,18 @@ const SignatureEditorPageRedesigned = () => {
                                         value={button.type}
                                         onChange={(e) => handleButtonChange(button.id, "type", e.target.value)}
                                       >
-                                        <option value="contact_us">Contact Us</option>
-                                        <option value="join_meeting">Join Meeting</option>
-                                        <option value="visit_website">Visit Website</option>
-                                        <option value="book_meeting">Book Meeting</option>
-                                        <option value="leave_review">Leave Review</option>
+                                        {availableButtonTypes.map((opt) => (
+                                          <option
+                                            key={opt.type}
+                                            value={opt.type}
+                                            disabled={
+                                              button.type !== opt.type && selectedButtons.some((b) => b.type === opt.type)
+                                            }
+                                          >
+                                            {opt.text}
+                                          </option>
+                                        ))}
+
                                       </select>
                                     </div>
 
@@ -1105,11 +1131,18 @@ const SignatureEditorPageRedesigned = () => {
                                         value={items.type}
                                         onChange={(e) => handlSocialMediaChange(items.id, "type", e.target.value)}
                                       >
-                                        <option value="Instagram">Instagram</option>
-                                        <option value="Facebook">Facebook</option>
-                                        <option value="Twitter">Twitter</option>
-                                        <option value="Linkedin">Linkedin</option>
-                                        <option value="Whatsapp">Whatsapp</option>
+                                        {availableSocialMediaTypes.map((type) => (
+                                          <option
+                                            key={type}
+                                            value={type}
+                                            disabled={
+                                              items.type !== type &&
+                                              selectedSocialMedia.some((item) => item.type === type)
+                                            }
+                                          >
+                                            {type}
+                                          </option>
+                                        ))}
 
                                       </select>
                                     </div>
