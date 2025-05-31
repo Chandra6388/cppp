@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { assigneToSupport, changeStatus, getAllEmployees } from '@/service/admin/supportTickets.service'
 import { getAllTicket } from '@/service/employee/ticketService'
 import { AllTickets, AssigneTo, Employee } from '../../../Utils/AdminIntrface'
+import socket from "@/socket";
 
 
 const TicketsPage = () => {
@@ -33,7 +34,7 @@ const TicketsPage = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [selectedTickedetId, setSelectedTicketId] = useState<string | null>(null);
 
- 
+
   useEffect(() => {
     if (selectedTicket?.status) {
       setSelectedStatus(selectedTicket.status);
@@ -43,7 +44,7 @@ const TicketsPage = () => {
   useEffect(() => {
     getTickets()
     getAllEmployeesData()
-  }, [])
+  }, [detailModalOpen])
 
 
   const getAllEmployeesData = async () => {
@@ -113,10 +114,19 @@ const TicketsPage = () => {
       })
   };
 
-  const handleOpenTicket = (ticket: AllTickets) => {
+const handleOpenTicket = (ticket: AllTickets) => {
     setSelectedTicket(ticket);
     setDetailModalOpen(true);
-  
+
+    // Emit seen event
+    socket.emit("mark-seen", { ticketId: ticket._id, userId: UserDetails._id });
+
+    // Optionally reset unseen count locally
+    setAllSupportTicket((prev) =>
+      prev.map((t) =>
+        t._id === ticket._id ? { ...t, unseenCount: 0 } : t
+      )
+    );
   };
 
   const handleStatusChange = (ticketId: string, newStatus: AllTickets["status"]) => {
@@ -232,6 +242,24 @@ const TicketsPage = () => {
     setSidebarCollapsed(collapsed);
   };
 
+  useEffect(() => {
+    if (!UserDetails?._id) return;
+    socket.emit("join-user", UserDetails._id);
+    socket.on("unseen-message-count", ({ ticketId, count }) => {
+      setAllSupportTicket((prev) =>
+        prev.map((ticket) =>
+          ticket._id === ticketId
+            ? { ...ticket, unreadMessageCount: count }
+            : ticket
+        )
+      );
+    });
+
+    return () => {
+      socket.off("unseen-message-count");
+    };
+  }, []);
+
 
   return (
     <SidebarProvider defaultOpen={!isMobile}>
@@ -294,9 +322,16 @@ const TicketsPage = () => {
                       {filteredTickets?.map((ticket) => (
                         <div
                           key={ticket?._id}
-                          className="border border-[#112F59] rounded-lg p-4 cursor-pointer hover:border-[#01C8A9] transition-colors"
+                          className="relative border border-[#112F59] rounded-lg p-4 cursor-pointer hover:border-[#01C8A9] transition-colors"
                           onClick={() => handleOpenTicket(ticket)}
                         >
+                          {/* Unseen message badge */}
+                          {ticket.unreadMessageCount > 0 && (
+                            <div className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
+                              {ticket.unreadMessageCount}
+                            </div>
+                          )}
+
                           <div className="flex justify-between items-start">
                             <div className="flex items-center gap-2">
                               {getStatusIcon(ticket?.status)}
@@ -308,12 +343,10 @@ const TicketsPage = () => {
                               ).join(' ')}
                             </Badge>
                           </div>
-
                           <p className="text-gray-400 text-sm mt-2 line-clamp-2">{ticket?.message}</p>
-
                           <div className="flex items-center gap-4 mt-3 text-xs text-gray-400">
                             <span>Created: {new Date(ticket.createdAt).toLocaleDateString()}</span>
-                            <span className={`
+                             <span className={`
                               ${ticket?.priority === 'low' ? 'text-green-400' :
                                 ticket?.priority === 'medium' ? 'text-yellow-400' :
                                   'text-red-400'}
@@ -322,16 +355,10 @@ const TicketsPage = () => {
                             </span>
                             {ticket?.category ? <span className="bg-[#07234A] px-2 py-0.5 rounded">{ticket?.category}</span> : ""}
                           </div>
-                          <div className="mt-3 flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              {ticket.chatHistory && (
-                                <span className="text-xs text-gray-400">
-                                  {ticket.chatHistory.length} {ticket.chatHistory.length === 1 ? 'message' : 'messages'}
-                                </span>
-                              )}
-                            </div>
-                          </div>
+                          <div className="flex items-center gap-4 mt-3 text-xs text-gray-400">
+                            <span>Messages: {ticket?.chatHistory?.length}</span>
 
+                          </div>
                         </div>
                       ))}
                     </div>

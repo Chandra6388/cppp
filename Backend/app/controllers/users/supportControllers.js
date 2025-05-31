@@ -54,19 +54,40 @@ class SupportTicket {
         }
         try {
             const tickets = await SupportTicketDB.aggregate([
-                {$match: {userId: new mongoose.Types.ObjectId(userId)}},
                 {
-                    $lookup:{
-                        from:"supportchats",
+                    $match: {
+                        userId: new mongoose.Types.ObjectId(userId)
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "supportchats",
                         localField: "_id",
                         foreignField: "ticketId",
                         as: "chatHistory"
                     }
+                },
+                {
+                    $addFields: {
+                        unreadMessageCount: {
+                            $size: {
+                                $filter: {
+                                    input: "$chatHistory",
+                                    as: "chat",
+                                    cond: { $eq: ["$$chat.isRead", false] }
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    $sort: { createdAt: -1 }
                 }
             ]).sort({ createdAt: -1 });
- 
+
             return res.send({ status: true, message: "All support tickets fetched successfully", data: tickets });
-        } catch (error) {
+        }
+        catch (error) {
             console.log("error", error.message);
             return res.send({ status: false, message: "Internal server error", error: error.message });
         }

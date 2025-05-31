@@ -35,7 +35,7 @@ const TicketsPage = () => {
 
   useEffect(() => {
     getTickets()
-  }, [])
+  }, [detailModalOpen])
 
   const getTickets = async () => {
     const req = { userId: UserDetails?._id }
@@ -187,18 +187,14 @@ const TicketsPage = () => {
     setSidebarCollapsed(collapsed);
   };
 
-
   useEffect(() => {
     if (!UserDetails?._id) return;
     socket.emit("join-user", UserDetails._id);
-    console.log("scccc",)
     socket.on("unseen-message-count", ({ ticketId, count }) => {
-
-      console.log("sss", ticketId)
       setAllSupportTicket((prev) =>
         prev.map((ticket) =>
           ticket._id === ticketId
-            ? { ...ticket, unseenCount: count }
+            ? { ...ticket, unreadMessageCount: count }
             : ticket
         )
       );
@@ -208,8 +204,6 @@ const TicketsPage = () => {
       socket.off("unseen-message-count");
     };
   }, []);
-
-
 
   return (
     <SidebarProvider defaultOpen={!isMobile}>
@@ -264,9 +258,9 @@ const TicketsPage = () => {
                           onClick={() => handleOpenTicket(ticket)}
                         >
                           {/* Unseen message badge */}
-                          {ticket.unseenCount > 0 && (
+                          {ticket.unreadMessageCount > 0 && (
                             <div className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
-                              {ticket.unseenCount}
+                              {ticket.unreadMessageCount}
                             </div>
                           )}
 
@@ -285,6 +279,10 @@ const TicketsPage = () => {
                           <div className="flex items-center gap-4 mt-3 text-xs text-gray-400">
                             <span>Created: {new Date(ticket.createdAt).toLocaleDateString()}</span>
                             {ticket?.category ? <span className="bg-[#07234A] px-2 py-0.5 rounded">{ticket?.category}</span> : ""}
+                          </div>
+                          <div className="flex items-center gap-4 mt-3 text-xs text-gray-400">
+                            <span>Messages: {ticket?.chatHistory?.length}</span>
+                           
                           </div>
                         </div>
                       ))}
