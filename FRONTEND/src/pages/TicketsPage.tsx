@@ -199,7 +199,6 @@ const TicketsPage = () => {
         )
       );
     });
-
     return () => {
       socket.off("unseen-message-count");
     };
