@@ -1,7 +1,5 @@
 const db = require('../models');
 const supportChatDb = db.supportChatDb;
-
-// Maintain a map of connected users and their socket IDs
 const userSocketMap = new Map();
 
 function supportChatSocketHandler(io) {
@@ -11,16 +9,12 @@ function supportChatSocketHandler(io) {
     socket.on("typing", ({ ticketId, senderId }) => {
       socket.to(ticketId).emit("typingsuport", { senderId });
     });
-    
-    
 
-    // Join a ticket room for message thread
     socket.on("join_ticket", ({ ticketId }) => {
       socket.join(ticketId);
       console.log(`📥 Socket ${socket.id} joined room ${ticketId}`);
     });
 
-    // Join a user-specific room for private notifications
     socket.on("join_user_room", ({ userId }) => {
       if (userId) {
         socket.join(userId);
@@ -29,7 +23,6 @@ function supportChatSocketHandler(io) {
       }
     });
 
-    // Handle incoming messages
     socket.on("support_message", async ({ chatDetails }) => {
       try {
         const savedMessage = await supportChatDb.create({
@@ -42,17 +35,21 @@ function supportChatSocketHandler(io) {
           isRead: false,
         });
 
+        // Send the new message to all clients in the ticket room
         io.to(chatDetails.ticketId).emit("receive_support_message", savedMessage);
 
-        const countUnreadMsg = await supportChatDb.countDocuments({
+        // 🔁 Get unread message count for this ticket
+        const ticketUnreadCount = await supportChatDb.countDocuments({
+          ticketId: chatDetails.ticketId,
           reciverId: chatDetails.reciverId,
           isRead: false,
-          sender: chatDetails.sender,
+          sender: chatDetails.sender, // messages from sender only
         });
 
-        io.to(chatDetails.reciverId).emit("unreadCountResponse", {
-          userId: chatDetails.reciverId,
-          count: countUnreadMsg,
+        // 📤 Send per-ticket unread count to receiver's personal room
+        io.to(chatDetails.reciverId).emit("unseen-message-count", {
+          ticketId: chatDetails.ticketId,
+          count: ticketUnreadCount,
         });
 
       } catch (err) {
@@ -63,7 +60,6 @@ function supportChatSocketHandler(io) {
       }
     });
 
-    // Mark messages as read
     socket.on("mark_as_read", async ({ ticketId, readerType, reciverId }) => {
       try {
         await supportChatDb.updateMany(
@@ -78,36 +74,27 @@ function supportChatSocketHandler(io) {
         socket.emit("messages_marked_as_read", { ticketId, readerType });
         socket.to(ticketId).emit("messages_marked_as_read", { ticketId, readerType });
 
-        const countUnreadMsg = await supportChatDb.countDocuments({
+        // 🔁 Update per-ticket unread count (will be 0 after marking read)
+        const ticketUnreadCount = await supportChatDb.countDocuments({
+          ticketId,
           reciverId,
           isRead: false,
           sender: readerType,
         });
 
-        console.log("🔁 Unread messages left for", reciverId, ":", countUnreadMsg);
-
-        const readerSocketId = userSocketMap.get(reciverId);
-        if (readerSocketId) {
-          io.to(readerSocketId).emit("unreadCountResponse", {
-            userId: reciverId,
-            count: countUnreadMsg,
-          });
-        } else {
-          // fallback: emit to current socket just in case
-          socket.emit("unreadCountResponse", {
-            userId: reciverId,
-            count: countUnreadMsg,
-          });
-        }
+        io.to(reciverId).emit("unseen-message-count", {
+          ticketId,
+          count: ticketUnreadCount,
+        });
 
       } catch (err) {
         console.error("❌ Error marking messages as read:", err);
       }
     });
 
-    // Manual unread count request
     socket.on("unreadCountUpdate", async ({ userId, readerType }) => {
       try {
+        // 🔄 Optionally, you can loop through ticket IDs if needed here
         const countUnreadMsg = await supportChatDb.countDocuments({
           reciverId: userId,
           isRead: false,
@@ -124,7 +111,6 @@ function supportChatSocketHandler(io) {
       }
     });
 
-    // Handle socket disconnection
     socket.on("disconnect", () => {
       console.log("🔴 Socket disconnected:", socket.id);
 

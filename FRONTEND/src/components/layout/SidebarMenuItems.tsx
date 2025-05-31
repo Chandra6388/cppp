@@ -10,7 +10,7 @@ import {
   Sparkles,
   Settings,
   Trash,
-  Box
+  Box,
 } from "lucide-react";
 import {
   SidebarMenu,
@@ -35,92 +35,43 @@ const SidebarMenuItems = ({
   const isActive = (path) => endpoint === path;
 
   const [unreadCounts, setUnreadCounts] = useState(0);
+  const isOpen = localStorage.getItem("open");
 
   const menuItemsByRole = {
     ADMIN: [
-      {
-        path: "/admin/dashboard",
-        label: "Home",
-        icon: Home,
-      },
-      {
-        path: "/admin/support-tickets",
-        label: "Support Tickets",
-        icon: TicketCheck,
-      },
+      { path: "/admin/dashboard", label: "Home", icon: Home },
+      { path: "/admin/support-tickets", label: "Support Tickets", icon: TicketCheck },
     ],
     EMPLOYEE: [
-      {
-        path: "/employee/dashboard",
-        label: "Home",
-        icon: Home,
-      },
-      {
-        path: "/employee/tickets",
-        label: "Tickets",
-        icon: TicketCheck,
-        showUnread: true,
-      },
+      { path: "/employee/dashboard", label: "Home", icon: Home },
+      { path: "/employee/tickets", label: "Tickets", icon: TicketCheck, showUnread: true },
     ],
     USER: [
-      {
-        path: "/user/dashboard",
-        label: "Home",
-        icon: Home,
-      },
-      {
-        path: "/user/signatures",
-        label: "My Signatures",
-        icon: FileSignature,
-      },
-      {
-        path: "/user/templates",
-        label: "Templates",
-        icon: Box,
-      },
-      {
-        path: "/user/tickets",
-        label: "Tickets",
-        icon: TicketCheck,
-        showUnread: true,
-      },
-      {
-        path: "/user/support",
-        label: "Support & Help",
-        icon: HelpCircle,
-      },
-      {
-        path: "/user/account",
-        label: "My Account",
-        icon: UserCircle,
-      },
-      {
-        path: "/user/settings",
-        label: "Settings",
-        icon: Settings,
-      },
-      {
-        path: "/user/recycle-bin",
-        label: "Recycle Bin",
-        icon: Trash,
-      },
+      { path: "/user/dashboard", label: "Home", icon: Home },
+      { path: "/user/signatures", label: "My Signatures", icon: FileSignature },
+      { path: "/user/templates", label: "Templates", icon: Box },
+      { path: "/user/tickets", label: "Tickets", icon: TicketCheck, showUnread: true },
+      { path: "/user/support", label: "Support & Help", icon: HelpCircle },
+      { path: "/user/account", label: "My Account", icon: UserCircle },
+      { path: "/user/settings", label: "Settings", icon: Settings },
+      { path: "/user/recycle-bin", label: "Recycle Bin", icon: Trash },
     ],
   };
 
   const menuItems = menuItemsByRole[Role] || [];
-const isOpen = localStorage.getItem("open");
-  useEffect(() => {
 
-    console.log("SidebarMenuItems mounted", isOpen);
+  // 🟢 Emit unread count request on mount
+  useEffect(() => {
     if (userId) {
       socket.emit("join_user_room", { userId });
       socket.emit("unreadCountUpdate", { userId, readerType });
     }
   }, [userId, readerType, isOpen]);
 
+  // 🟢 Handle unread count response
   useEffect(() => {
     const handleUnreadCountResponse = ({ userId: incomingId, count }) => {
-      if (incomingId && incomingId === userId) {
+      if (incomingId === userId) {
         setUnreadCounts(count);
       }
     };
@@ -131,6 +82,7 @@ const isOpen = localStorage.getItem("open");
     };
   }, [userId]);
 
+  // 🟢 Refresh unread count when window is focused
   useEffect(() => {
     const handleFocus = () => {
       socket.emit("unreadCountUpdate", { userId, readerType });
@@ -138,6 +90,21 @@ const isOpen = localStorage.getItem("open");
 
     window.addEventListener("focus", handleFocus);
     return () => window.removeEventListener("focus", handleFocus);
+  }, [userId, readerType]);
+
+  // 🟢 Listen for message seen event and refresh count
+  useEffect(() => {
+    const handleMessagesMarkedAsRead = ({ ticketId, readerType: msgReaderType }) => {
+      // Make sure it’s relevant
+      if (msgReaderType !== readerType) {
+        socket.emit("unreadCountUpdate", { userId, readerType });
+      }
+    };
+
+    socket.on("messages_marked_as_read", handleMessagesMarkedAsRead);
+    return () => {
+      socket.off("messages_marked_as_read", handleMessagesMarkedAsRead);
+    };
   }, [userId, readerType]);
 
   return (
@@ -214,7 +181,7 @@ const isOpen = localStorage.getItem("open");
             </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>
-      ))} 
+      ))}
     </SidebarMenu>
   );
 };

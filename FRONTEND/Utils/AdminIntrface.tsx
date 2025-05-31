@@ -75,6 +75,7 @@ export interface AllTickets {
     priority: "low" | "medium" | "high" | null;
     assignee?: string;
     chatHistory?: message[]
+    unseenCount?:number
 }
 
 export interface message {
@@ -124,7 +125,8 @@ export interface Message {
     text: string;
     sender: string;
     timestamp: Date;
-    senderId: string
+    senderId: string,
+    isRead?:boolean
 }
 
 
