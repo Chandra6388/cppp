@@ -11,6 +11,10 @@ class Tickets {
             return res.send({ status: false, message: "Internal server error", error: error.message })
         }
 
+
+
+        
+
     }
 
     async assigneToSupport(req, res) {
