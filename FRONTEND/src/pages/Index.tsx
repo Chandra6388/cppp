@@ -112,7 +112,7 @@ const Index = () => {
       <div className="flex w-full min-h-screen bg-gradient-to-br from-[#001430] to-[#031a3d] font-sans">
         
         <MainSidebar open={sidebarOpen} onOpenChange={setSidebarOpen} onCollapseChange={setSidebarCollapsed} />
-        <div className="flex flex-col flex-1 transition-all duration-300 ease-in-out" style={{ width: "100%", marginLeft: isMobile ? 0 : sidebarCollapsed ? '70px' : '250px', paddingBottom: isMobile ? '80px' : '0' }}>
+        <div className="flex flex-col flex-1 transition-all duration-300 ease-in-out" style={{ width: "100%", marginLeft: isMobile ? 0 : sidebarCollapsed ? '70px' : '230px', paddingBottom: isMobile ? '80px' : '0' }}>
 
           <Header onMenuClick={handleMenuClick} />
           <div className="p-6">

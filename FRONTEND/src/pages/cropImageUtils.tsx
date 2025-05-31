@@ -620,7 +620,7 @@ const SignatureEditorPageRedesigned = () => {
           className="flex flex-col flex-1 transition-all duration-300 ease-in-out"
           style={{
             width: "100%",
-            marginLeft: isMobile ? 0 : sidebarCollapsed ? '70px' : '250px',
+            marginLeft: isMobile ? 0 : sidebarCollapsed ? '70px' : '230px',
             paddingBottom: isMobile ? '80px' : '0'
           }}
         >

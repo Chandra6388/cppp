@@ -201,8 +201,8 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
           </DialogHeader>
 
           <div className="flex flex-col">
-            <div className="p-6 border-b border-[#112F59]">
-              <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className=" px-6 border-b border-[#112F59]">
+              <div className="grid grid-cols-3 gap-4 text-sm">
                 <div>
                   <p className="text-[#8B8B8B]">Status</p>
                   <div className="flex items-center gap-2 mt-1">
@@ -255,7 +255,7 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
                 <p className="text-white text-sm">{ticket?.message}</p>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-6 space-y-4" ref={chatContainerRef} style={{ maxHeight: "250px" }}>
+              <div className="flex-1 overflow-y-auto p-6 space-y-4" ref={chatContainerRef} style={{ maxHeight: "200px" }}>
                 {getAllChats?.length > 0 ? (
                   <>
                     {getAllChats?.map((message, index) => (
