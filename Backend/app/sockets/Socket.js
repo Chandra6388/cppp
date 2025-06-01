@@ -55,7 +55,7 @@ function supportChatSocketHandler(io) {
 
         // 4. Create a notification for the receiver
         await NotificationDb.create({
-          userId: chatDetails.reciverId,
+          reciverId: chatDetails.reciverId,
           type: "message",
           title: "New Support Message",
           ticketId: chatDetails.ticketId,
@@ -73,8 +73,6 @@ function supportChatSocketHandler(io) {
 
     socket.on("mark_as_read", async ({ ticketId, readerType, reciverId }) => {
       try {
-        console.log("reciverId", reciverId)
-
         await supportChatDb.updateMany(
           {
             ticketId,
@@ -86,8 +84,8 @@ function supportChatSocketHandler(io) {
 
         await NotificationDb.updateMany(
           {
-            ticketId,
-            // userId,
+            ticketId, 
+            reciverId,
             isRead: false,
           },
           { $set: { isRead: true } }

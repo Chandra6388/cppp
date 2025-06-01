@@ -21,4 +21,12 @@ export const getWhatsappNotificationSettings = async (data: any) => {
     }
 }
  
- 
+ export const View = async (data: any) => {
+    try {
+        const res = await axios.post(`${Config.base_url}View`, data )
+        return res?.data
+    }
+    catch (err) {
+        return err
+    }
+}

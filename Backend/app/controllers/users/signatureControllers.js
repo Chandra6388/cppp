@@ -8,7 +8,7 @@ const mongoose = require('mongoose');
 const nodemailer = require("nodemailer");
 require("dotenv").config();
 const UAParser = require('ua-parser-js');
-
+const UnreadSupportChat = db.UnreadSupportChat
 
 class Signature {
 
@@ -80,7 +80,7 @@ class Signature {
   async updateSignature(req, res) {
     try {
       const { id, details, Templates_Id, SignatureName } = req.body;
-    
+
 
       const missingFields = [];
       if (!id) missingFields.push("id");
@@ -274,7 +274,7 @@ class Signature {
       });
     }
   }
-  
+
   async getSignatureById(req, res) {
     try {
       const { id } = req.body;
@@ -623,7 +623,7 @@ class Signature {
 
   }
 
- 
+
   async trackClick(req, res) {
     try {
       const { url, btnName, userId, linkType, signatureId } = req.query;

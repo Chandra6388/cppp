@@ -1,3 +1,12 @@
+"use strict";
+
+const mongoose = require("mongoose");
+
+// Define a schema (can be empty or just for reference fields)
+const unreadSupportChatSchema = new mongoose.Schema({}, { strict: false });
+
+// Bind it to the view name (collection name is the same as the view name)
+const UnreadSupportChat = mongoose.model("UnreadSupportChat", unreadSupportChatSchema, "unreadSupportChats");
 
 module.exports = {
   UserDb: require("./users"),
@@ -9,7 +18,6 @@ module.exports = {
   SupportTicketDB: require('./supportTickets.model'),
   ChatMessageDb: require('./chatMessage.Model'),
   supportChatDb: require('./supportChat.model'),
-  NotificationDb: require('./Notification.model')
-  
-
+  NotificationDb: require('./Notification.model'),
+  UnreadSupportChat: UnreadSupportChat   // ✅ Add comma above
 };

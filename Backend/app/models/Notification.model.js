@@ -3,10 +3,15 @@ const mongoose = require("mongoose");
 const { Schema, model } = mongoose;
 
 const Notifications = new Schema({
-  userId: {
+  reciverId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "users",
     required: true
+  },
+  ticketId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "supporttickets",
+    default: null
   },
   type: {
     type: String,
@@ -18,11 +23,6 @@ const Notifications = new Schema({
     type: String,
     required: true,
     trim: true,
-    default: null
-  },
-  ticketId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "supporttickets",
     default: null
   },
   message: {

@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { changeStatus, } from '@/service/admin/supportTickets.service'
 import { getAllSupportTicket } from '@/service/User/supportChatService'
 import { AllTickets, } from '../../Utils/AdminIntrface'
+import { View } from '@/service/User/settingService'
 import socket from "@/socket";
 const TicketsPage = () => {
   const isMobile = useIsMobile();
@@ -26,6 +27,7 @@ const TicketsPage = () => {
   const [allSupportTicket, setAllSupportTicket] = useState<AllTickets[]>([]);
   const [changeStatusModal, setchangestatusModal] = useState(false)
   const [selectedStatus, setSelectedStatus] = useState<string>("Open");
+  const [cpp, setCpp] = useState([])
 
   useEffect(() => {
     if (selectedTicket?.status) {
@@ -37,6 +39,10 @@ const TicketsPage = () => {
     getTickets()
   }, [detailModalOpen])
 
+
+  useEffect(() => {
+    views()
+  }, [])
   const getTickets = async () => {
     const req = { userId: UserDetails?._id }
     await getAllSupportTicket(req)
@@ -46,6 +52,23 @@ const TicketsPage = () => {
         }
         else {
           setAllSupportTicket([])
+        }
+      })
+      .catch((error) => {
+        console.log("error in fatching tickets", error)
+      })
+  }
+
+
+  const views = async () => {
+    const req = { userId: UserDetails?._id }
+    await View(req)
+      .then((res) => {
+        if (res.status) {
+          setCpp(res.data)
+        }
+        else {
+          setCpp([])
         }
       })
       .catch((error) => {
@@ -283,7 +306,7 @@ const TicketsPage = () => {
                           </div>
                           <div className="flex items-center gap-4 mt-3 text-xs text-gray-400">
                             <span>Messages: {ticket?.chatHistory?.length}</span>
-                           
+
                           </div>
                         </div>
                       ))}
