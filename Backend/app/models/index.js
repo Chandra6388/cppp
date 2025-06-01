@@ -9,6 +9,7 @@ module.exports = {
   SupportTicketDB: require('./supportTickets.model'),
   ChatMessageDb: require('./chatMessage.Model'),
   supportChatDb: require('./supportChat.model'),
+  NotificationDb: require('./Notification.model')
   
 
 };

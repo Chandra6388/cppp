@@ -43,9 +43,11 @@ const TicketsPage = () => {
 
   useEffect(() => {
     getTickets()
-    getAllEmployeesData()
   }, [detailModalOpen])
 
+  useEffect(() => {
+    getAllEmployeesData()
+  }, [])
 
   const getAllEmployeesData = async () => {
     const req = {}
@@ -114,7 +116,7 @@ const TicketsPage = () => {
       })
   };
 
-const handleOpenTicket = (ticket: AllTickets) => {
+  const handleOpenTicket = (ticket: AllTickets) => {
     setSelectedTicket(ticket);
     setDetailModalOpen(true);
 
@@ -346,7 +348,7 @@ const handleOpenTicket = (ticket: AllTickets) => {
                           <p className="text-gray-400 text-sm mt-2 line-clamp-2">{ticket?.message}</p>
                           <div className="flex items-center gap-4 mt-3 text-xs text-gray-400">
                             <span>Created: {new Date(ticket.createdAt).toLocaleDateString()}</span>
-                             <span className={`
+                            <span className={`
                               ${ticket?.priority === 'low' ? 'text-green-400' :
                                 ticket?.priority === 'medium' ? 'text-yellow-400' :
                                   'text-red-400'}

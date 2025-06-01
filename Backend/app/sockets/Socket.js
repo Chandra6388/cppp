@@ -1,6 +1,7 @@
 const db = require('../models');
 const supportChatDb = db.supportChatDb;
 const userSocketMap = new Map();
+const NotificationDb = db.NotificationDb
 
 function supportChatSocketHandler(io) {
   io.on("connection", (socket) => {
@@ -35,10 +36,8 @@ function supportChatSocketHandler(io) {
           isRead: false,
         });
 
-        // Send the new message to all clients in the ticket room
         io.to(chatDetails.ticketId).emit("receive_support_message", savedMessage);
 
-        // 🔁 Get unread message count for this ticket
         const ticketUnreadCount = await supportChatDb.countDocuments({
           ticketId: chatDetails.ticketId,
           reciverId: chatDetails.reciverId,
@@ -46,11 +45,19 @@ function supportChatSocketHandler(io) {
           sender: chatDetails.sender, // messages from sender only
         });
 
-        // 📤 Send per-ticket unread count to receiver's personal room
         io.to(chatDetails.reciverId).emit("unseen-message-count", {
           ticketId: chatDetails.ticketId,
           count: ticketUnreadCount,
         });
+
+        const newNotification = await NotificationDb.create({
+          userId,
+          type,
+          title,
+          ticketId,
+          message,
+          isRead
+        })
 
       } catch (err) {
         console.error("❌ DB Error (support_message):", err);
@@ -74,7 +81,6 @@ function supportChatSocketHandler(io) {
         socket.emit("messages_marked_as_read", { ticketId, readerType });
         socket.to(ticketId).emit("messages_marked_as_read", { ticketId, readerType });
 
-        // 🔁 Update per-ticket unread count (will be 0 after marking read)
         const ticketUnreadCount = await supportChatDb.countDocuments({
           ticketId,
           reciverId,
@@ -94,7 +100,6 @@ function supportChatSocketHandler(io) {
 
     socket.on("unreadCountUpdate", async ({ userId, readerType }) => {
       try {
-        // 🔄 Optionally, you can loop through ticket IDs if needed here
         const countUnreadMsg = await supportChatDb.countDocuments({
           reciverId: userId,
           isRead: false,
@@ -113,7 +118,6 @@ function supportChatSocketHandler(io) {
 
     socket.on("disconnect", () => {
       console.log("🔴 Socket disconnected:", socket.id);
-
       for (const [userId, sockId] of userSocketMap.entries()) {
         if (sockId === socket.id) {
           userSocketMap.delete(userId);
