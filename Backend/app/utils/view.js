@@ -1,6 +1,6 @@
 db.createView(
-  "unreadSupportChats",       // View name
-  "supportchats",             // Source collection
+  "unreadSupportChats",      
+  "supportchats",             
   [
     {
       $match: { isRead: false }
