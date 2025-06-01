@@ -74,7 +74,12 @@ class SupportTicket {
                                 $filter: {
                                     input: "$chatHistory",
                                     as: "chat",
-                                    cond: { $eq: ["$$chat.isRead", false] }
+                                    cond: {
+                                        $and: [
+                                            { $eq: ["$$chat.isRead", false] },
+                                            { $eq: ["$$chat.reciverId", new mongoose.Types.ObjectId(userId)] }
+                                        ]
+                                    }
                                 }
                             }
                         }
@@ -83,7 +88,8 @@ class SupportTicket {
                 {
                     $sort: { createdAt: -1 }
                 }
-            ]).sort({ createdAt: -1 });
+            ]);
+
 
             return res.send({ status: true, message: "All support tickets fetched successfully", data: tickets });
         }

@@ -204,6 +204,8 @@ const TicketsPage = () => {
     };
   }, []);
 
+  console.log("allSupportTicket", allSupportTicket)
+
   return (
     <SidebarProvider defaultOpen={!isMobile}>
       <div className="flex w-full min-h-screen bg-[#001430] font-sans">
