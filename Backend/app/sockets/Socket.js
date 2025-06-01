@@ -26,6 +26,7 @@ function supportChatSocketHandler(io) {
 
     socket.on("support_message", async ({ chatDetails }) => {
       try {
+        // 1. Save the chat message
         const savedMessage = await supportChatDb.create({
           ticketId: chatDetails.ticketId,
           reciverId: chatDetails.reciverId,
@@ -36,13 +37,15 @@ function supportChatSocketHandler(io) {
           isRead: false,
         });
 
+        // 2. Emit message to the ticket room
         io.to(chatDetails.ticketId).emit("receive_support_message", savedMessage);
 
+        // 3. Emit unseen message count to receiver
         const ticketUnreadCount = await supportChatDb.countDocuments({
           ticketId: chatDetails.ticketId,
           reciverId: chatDetails.reciverId,
           isRead: false,
-          sender: chatDetails.sender, // messages from sender only
+          sender: chatDetails.sender, // Only from sender
         });
 
         io.to(chatDetails.reciverId).emit("unseen-message-count", {
@@ -50,14 +53,15 @@ function supportChatSocketHandler(io) {
           count: ticketUnreadCount,
         });
 
-        const newNotification = await NotificationDb.create({
-          userId,
-          type,
-          title,
-          ticketId,
-          message,
-          isRead
-        })
+        // 4. Create a notification for the receiver
+        await NotificationDb.create({
+          userId: chatDetails.reciverId,
+          type: "message",
+          title: "New Support Message",
+          ticketId: chatDetails.ticketId,
+          message: chatDetails.text,
+          isRead: false,
+        });
 
       } catch (err) {
         console.error("❌ DB Error (support_message):", err);
@@ -69,6 +73,8 @@ function supportChatSocketHandler(io) {
 
     socket.on("mark_as_read", async ({ ticketId, readerType, reciverId }) => {
       try {
+        console.log("reciverId", reciverId)
+
         await supportChatDb.updateMany(
           {
             ticketId,
@@ -77,6 +83,16 @@ function supportChatSocketHandler(io) {
           },
           { $set: { isRead: true } }
         );
+
+        await NotificationDb.updateMany(
+          {
+            ticketId,
+            // userId,
+            isRead: false,
+          },
+          { $set: { isRead: true } }
+        );
+
 
         socket.emit("messages_marked_as_read", { ticketId, readerType });
         socket.to(ticketId).emit("messages_marked_as_read", { ticketId, readerType });

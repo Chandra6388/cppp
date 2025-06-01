@@ -1,13 +1,10 @@
-// 📍 app/utils/sendEmail.js
-
 const nodemailer = require("nodemailer");
-
 const sendEmail = async (to, subject, html, base64Data = null) => {
     const transporter = nodemailer.createTransport({
         service: "gmail",
         auth: {
             user: "chandra@eprimecomputers.com",
-            pass: "gtor qsbe hlqu ladw", // 🔐 Make sure to use env in production!
+            pass: "gtor qsbe hlqu ladw",
         },
     });
 
