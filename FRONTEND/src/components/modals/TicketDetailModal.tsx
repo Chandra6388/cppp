@@ -11,6 +11,8 @@ import socket from "@/socket";
 import { getChatHistory } from "@/service/employee/ticketService";
 
 
+
+
 const TicketDetailModal: React.FC<TicketDetailModalProps> = ({ open, onOpenChange, ticket, onStatusChange, setchangestatusModal, changeStatusModal, selectedStatus, setSelectedStatus, handleSubmit, employeeName, type, }) => {
   const [isTyping, setIsTyping] = useState(false);
   const [getAllChats, setAllChat] = useState<Message[]>([]);
