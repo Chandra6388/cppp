@@ -10,8 +10,6 @@ import { getPriorityColor, getStatusColor, formatDate, getChatTime } from "../..
 import socket from "@/socket";
 import { getChatHistory } from "@/service/employee/ticketService";
 
-
-
 const TicketDetailModal: React.FC<TicketDetailModalProps> = ({ open, onOpenChange, ticket, onStatusChange, setchangestatusModal, changeStatusModal, selectedStatus, setSelectedStatus, handleSubmit, employeeName, type, }) => {
   const [isTyping, setIsTyping] = useState(false);
   const [getAllChats, setAllChat] = useState<Message[]>([]);
@@ -19,9 +17,7 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({ open, onOpenChang
   const UserDetails = JSON.parse(localStorage.getItem('user') || '{}');
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const [isSending, setIsSending] = useState(false);
-const handleStatusChange = () => {
-    setchangestatusModal(true)
-  };
+
   const chatHistory = async () => {
     const req = { ticketId: ticket?._id };
     try {
@@ -33,6 +29,10 @@ const handleStatusChange = () => {
     }
   };
 
+  const handleStatusChange = () => {
+    setchangestatusModal(true)
+  };
+  
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'Open':
@@ -127,6 +127,7 @@ const handleStatusChange = () => {
         ticketId: ticket._id,
         readerType: type,
         reciverId: type === "user" ? ticket?.assignee : ticket?.userId,
+        senderId: UserDetails?._id,
       };
       socket.emit("mark_as_read", payload);
     }
@@ -138,6 +139,41 @@ const handleStatusChange = () => {
       handleSendMessage();
     }
   };
+
+
+  useEffect(() => {
+    if (!ticket?._id) return;
+
+    const receiverId = type === "user" ? ticket.assignee : ticket.userId;
+
+    if (open) {
+      socket.emit("open_ticket_chat", {
+        userId: UserDetails?._id,
+        ticketId: ticket._id,
+      });
+
+      if (UserDetails?._id === receiverId) {
+        socket.emit("receiver_chat_presence", {
+          receiverId,
+          ticketId: ticket._id,
+        });
+      }
+    }
+
+    return () => {
+      socket.emit("close_ticket_chat", {
+        userId: UserDetails?._id,
+        ticketId: ticket._id,
+      });
+
+      if (UserDetails?._id === receiverId) {
+        socket.emit("receiver_chat_absence", {
+          receiverId,
+          ticketId: ticket._id,
+        });
+      }
+    };
+  }, [open, ticket?._id]);
 
   return (
     <>
@@ -210,7 +246,8 @@ const handleStatusChange = () => {
                   </div>
                 )}
               </div>
-                <div className="mt-4">
+
+              <div className="mt-4">
                 <p className="text-[#8B8B8B] mb-1">Description</p>
                 <p className="text-white text-sm">{ticket?.message}</p>
               </div>
@@ -264,7 +301,7 @@ const handleStatusChange = () => {
                   </div>
                 )}
               </div>
-              {type === "user" && (ticket?.status === "Open" || ticket?.status === "Closed") ? null : (
+              {(ticket?.status === "Open" || ticket?.status === "Closed") ? null : (
                 <div className="p-4 border-t border-[#112F59]">
                   <div className="flex gap-2">
                     <Input
@@ -277,15 +314,7 @@ const handleStatusChange = () => {
                       placeholder="Type your message..."
                       className="flex-1 bg-[#07234A] border-[#112F59] text-white"
                     />
-                    <Button
-                      type="button"
-                      variant="teal"
-                      onClick={handleSendMessage}
-                      size="icon"
-                      disabled={ticket.status === 'closed'}
-                    >
-                      <SendHorizontal size={18} />
-                    </Button>
+                    <Button type="button" variant="teal" onClick={handleSendMessage} size="icon" disabled={ticket.status === 'closed'} > <SendHorizontal size={18} /></Button>
                   </div>
                   {ticket.status === 'closed' && (
                     <p className="text-amber-400 text-xs mt-2">This ticket is closed. You cannot send new messages.</p>
@@ -303,19 +332,14 @@ const handleStatusChange = () => {
               <div>
                 <h2 className="text-white text-xl font-medium flex items-center gap-2">Change Status</h2>
               </div>
-              <button
-                onClick={() => setchangestatusModal(false)}
-                className="text-white hover:text-gray-300"
-              >
+              <button onClick={() => setchangestatusModal(false)} className="text-white hover:text-gray-300" >
                 <X size={20} />
               </button>
             </div>
           </DialogHeader>
-
           <div className="p-6">
             <div>
               <div className="space-y-4">
-
                 <label className="text-[#8B8B8B]">Change To</label>
                 <div>
                   <select
@@ -323,21 +347,12 @@ const handleStatusChange = () => {
                     value={selectedStatus}
                     onChange={(e) => setSelectedStatus(e.target.value)}
                   >
-                    <option value="Open">Open</option>
                     <option value="Progress">In Progress</option>
                     <option value="Resolved">Resolved</option>
                     <option value="Closed">Closed</option>
                   </select>
                 </div>
-
-                <Button
-                  variant="teal"
-                  className="w-full my-4"
-                  onClick={() => handleSubmit(ticket._id, selectedStatus)}
-                >
-                  Change
-                </Button>
-
+                <Button variant="teal" className="w-full my-4" onClick={() => handleSubmit(ticket._id, selectedStatus)}>Change</Button>
               </div>
             </div>
           </div>

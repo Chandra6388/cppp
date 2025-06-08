@@ -93,6 +93,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, navigate }
             setLoading(false);
             return navigate('/login');
           }
+
+          if(res?.user?.isGoogleLogin){
+            sweetAlert(
+              "Google Login Detected",
+              "You have logged in using Google. Please use the Google login option for future logins.",
+              "warning",
+              4000
+            );
+            setLoading(false);
+            return navigate('/login');
+          }
           const newUser: User = {
             id: res?.user?._id,
             email: res?.user?.email,
@@ -100,6 +111,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, navigate }
           };
           setUser(newUser);
           localStorage.setItem('user', JSON.stringify(res.user));
+          localStorage.setItem('token', JSON.stringify(res.token));
+
           sweetAlert(
             "Login Successful",
             `Welcome back, ${newUser.displayName}!`,

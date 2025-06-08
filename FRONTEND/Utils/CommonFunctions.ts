@@ -1,5 +1,5 @@
 import Swal from 'sweetalert2';
-import { Circle } from "lucide-react";
+import { format, differenceInMinutes, differenceInHours, parseISO, isValid } from "date-fns";
 export const ConvertDate = (data: string) => {
   const date = new Date(data);
   const options: Intl.DateTimeFormatOptions = {
@@ -119,3 +119,38 @@ export const getPriorityColor = (priority: string) => {
 };
 
 
+export const formatNotificationTime=(isoString: string): string =>{
+  if (!isoString) return "";
+
+  const date = parseISO(isoString);
+  if (!isValid(date)) return "";
+
+  const now = new Date();
+  const minutesAgo = differenceInMinutes(now, date);
+  const hoursAgo = differenceInHours(now, date);
+
+  if (minutesAgo < 1) {
+    return "Just now";
+  } else if (minutesAgo < 60) {
+    return `${minutesAgo} min ago`;
+  } else if (hoursAgo < 24) {
+    return `${hoursAgo}h ago`;
+  } else {
+    return format(date, "MMM dd, yyyy");
+  }
+}
+
+export const base64ToBlob = (base64String: string) => {
+  const parts = base64String.split(',');
+  const mimeMatch = parts[0].match(/:(.*?);/);
+  const mime = mimeMatch ? mimeMatch[1] : '';
+  const byteString = atob(parts[1]);
+  const arrayBuffer = new ArrayBuffer(byteString.length);
+  const intArray = new Uint8Array(arrayBuffer);
+
+  for (let i = 0; i < byteString.length; i++) {
+    intArray[i] = byteString.charCodeAt(i);
+  }
+
+  return new Blob([intArray], { type: mime });
+};

@@ -276,7 +276,7 @@ const TicketsPage = () => {
           className="flex flex-col flex-1 transition-all duration-300 ease-in-out"
           style={{
             width: "100%",
-            marginLeft: isMobile ? 0 : sidebarCollapsed ? '70px' : '230px'
+            marginLeft: isMobile ? 0 : sidebarCollapsed ? '70px' : '250px'
           }}
         >
           <Header onMenuClick={handleMenuClick} />

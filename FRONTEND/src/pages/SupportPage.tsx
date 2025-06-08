@@ -250,7 +250,7 @@ const SupportPage = () => {
           className="flex flex-col flex-1 transition-all duration-300 ease-in-out"
           style={{
             width: "100%",
-            marginLeft: isMobile ? 0 : sidebarCollapsed ? '70px' : '230px',
+            marginLeft: isMobile ? 0 : sidebarCollapsed ? '70px' : '250px',
             paddingBottom: isMobile ? '80px' : '20px'
           }}
         >
@@ -262,12 +262,12 @@ const SupportPage = () => {
               <h1 className="text-white text-xl font-semibold">Help & Support</h1>
             </div>
 
-            <Tabs defaultValue="chat" className="w-full">
+            <Tabs defaultValue="faq" className="w-full">
               <TabsList className="bg-[#031123]/80 border border-[#112F59] mb-6">
-                <TabsTrigger value="chat" className="flex items-center gap-1">
+                {/* <TabsTrigger value="chat" className="flex items-center gap-1">
                   <MessageCircle className="w-4 h-4" />
                   <span>Live Chat</span>
-                </TabsTrigger>
+                </TabsTrigger> */}
                 <TabsTrigger value="faq" className="flex items-center gap-1">
                   <BookOpen className="w-4 h-4" />
                   <span>FAQs</span>
@@ -401,7 +401,7 @@ const SupportPage = () => {
                     </div>
                   </motion.div>
 
-                  <motion.div variants={itemVariants} className="bg-gradient-to-br from-[#031123] to-[#051b36] border border-[#112F59] rounded-lg p-6 text-center">
+                  {/* <motion.div variants={itemVariants} className="bg-gradient-to-br from-[#031123] to-[#051b36] border border-[#112F59] rounded-lg p-6 text-center">
                     <h4 className="text-white font-medium mb-2">Can't find what you're looking for?</h4>
                     <p className="text-gray-400 mb-4">Our support team is ready to assist you with any questions</p>
                     <Button
@@ -416,7 +416,7 @@ const SupportPage = () => {
                       <MessageCircle className="w-4 h-4 mr-2" />
                       Start a Chat
                     </Button>
-                  </motion.div>
+                  </motion.div> */}
                 </motion.div>
               </TabsContent>
 

@@ -16,8 +16,6 @@ import { userGraphData, UsersArr, EmployeeArr, TimeFilterOption } from '../../..
 import EnhancedSignatureUseCard from "@/components/dashboard/EnhancedSignatureUseCard";
 
 
-
-
 const Dashboard = () => {
   const isMobile = useIsMobile();
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
@@ -166,9 +164,9 @@ const Dashboard = () => {
 
   const EmployeeData = {
     day: [
-      { title: "Total Employees", value: employeeArr?.currectEmployeeData?.total_employee, change: employeeArr.percentage_change.total_employee, isPositive: Number(employeeArr.percentage_change.total_employee) >= 0 ? true : false },
-      { title: "Total Active Employees", value: employeeArr?.currectEmployeeData?.total_active_employee, change: employeeArr.percentage_change.total_active_employee, isPositive: Number(employeeArr.percentage_change.total_active_employee) >= 0 ? true : false },
-      { title: "Total InActive Employees", value: employeeArr.currectEmployeeData.total_inactive_employee, change: employeeArr.percentage_change.total_inactive_employee, isPositive: Number(employeeArr.percentage_change.total_inactive_employee) >= 0 ? true : false },
+      { title: "Total Employees", value: employeeArr?.currectEmployeeData?.total_employee, change: employeeArr?.percentage_change?.total_employee, isPositive: Number(employeeArr?.percentage_change?.total_employee) >= 0 ? true : false },
+      { title: "Total Active Employees", value: employeeArr?.currectEmployeeData?.total_active_employee, change: employeeArr?.percentage_change?.total_active_employee, isPositive: Number(employeeArr?.percentage_change?.total_active_employee) >= 0 ? true : false },
+      { title: "Total InActive Employees", value: employeeArr?.currectEmployeeData?.total_inactive_employee, change: employeeArr?.percentage_change?.total_inactive_employee, isPositive: Number(employeeArr?.percentage_change?.total_inactive_employee) >= 0 ? true : false },
 
     ]
   };
@@ -242,7 +240,7 @@ const Dashboard = () => {
           className="flex flex-col flex-1 transition-all duration-300 ease-in-out"
           style={{
             width: "100%",
-            marginLeft: isMobile ? 0 : '230px',
+            marginLeft: isMobile ? 0 : '250px',
             paddingBottom: isMobile ? '80px' : '0'
           }}
         >
@@ -295,7 +293,7 @@ const Dashboard = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {usersArr.data.map((item, index) => (
+                      {usersArr?.data?.map((item, index) => (
                         <tr key={index} className="border-b border-[#112F59] hover:bg-[#051b37]">
                           <td className="py-4 px-4 text-white flex items-center">{item?.Username}</td>
                           <td className="py-4 px-4 text-center text-white">{item?.Email}</td>
@@ -352,7 +350,7 @@ const Dashboard = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {employeeArr.data.map((item, index) => (
+                      {employeeArr?.data?.map((item, index) => (
                         <tr key={index} className="border-b border-[#112F59] hover:bg-[#051b37]">
                           <td className="py-4 px-4 text-white flex items-center">{item?.Username}</td>
                           <td className="py-4 px-4 text-center text-white">{item?.Email}</td>

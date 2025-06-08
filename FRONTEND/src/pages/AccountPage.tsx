@@ -14,42 +14,68 @@ import { useToast } from "@/hooks/use-toast";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import type { LucideIcon } from "lucide-react";
 import { ConvertDate } from '../../Utils/CommonFunctions'
 import { updateProfileImg, getUserById } from '@/service/auth/auth.service'
 import { SEO } from '../../Utils/Helmet'
+import { EditableFieldProps } from "../../Utils/UserInterface";
+import { updateUser } from "@/service/auth/auth.service";
+import {uploadImg} from "@/service/auth/auth.service";
 
 
-interface EditableFieldProps {
-  label: string;
-  value: string;
-  icon?: LucideIcon;
-  onSave: (value: string) => void;
-  type?: string;
-  placeholder?: string;
-}
 
-const EditableField: React.FC<EditableFieldProps> = ({
-  label,
-  value,
-  icon: Icon,
-  onSave,
-  type = "text",
-  placeholder
-}) => {
+const EditableField: React.FC<EditableFieldProps> = ({ label, value, icon: Icon, onSave, type = "text", placeholder, isEditable = true, name }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState(value);
+  const userDetails = JSON.parse(localStorage.getItem('user'))
 
-  const handleEdit = () => {
-    setIsEditing(true);
-  };
-
-  const handleSave = () => {
-    if (inputValue.trim()) {
-      onSave(inputValue);
-      setIsEditing(false);
+  const { toast } = useToast();
+  const handleSave = async () => {
+    const trimmedValue = inputValue.trim();
+    if (trimmedValue === "") {
+      toast({
+        title: "warning",
+        description: `Please enter a valid ${name}`,
+        variant: "warning",
+        duration: 1000,
+      });
+      return;
     }
-  };
+    if (name === "PhoneNo") {
+      const phoneValid = /^\d{10}$/.test(trimmedValue);
+      if (!phoneValid) {
+        toast({
+          title: "Warning",
+          description: "Please enter a valid 10-digit phone number",
+          variant: "warning",
+          duration: 1000,
+        });
+        return;
+      }
+    }
+
+    const req = { id: userDetails?._id, value: inputValue, name: name }
+    await updateUser(req)
+      .then((res) => {
+        if (res.status) {
+          onSave(inputValue);
+          setIsEditing(false);
+          toast({
+            title: "Success",
+            description: `Your ${name} has been updated successfully`,
+            variant: "success",
+            duration: 1000,
+          });
+        } else {
+          console.error("Error updating user details:", res.message);
+        }
+      }
+      )
+      .catch((error) => {
+        console.error("Error in updating user details:", error);
+      }
+      );
+
+  }
 
   const handleCancel = () => {
     setInputValue(value);
@@ -86,13 +112,13 @@ const EditableField: React.FC<EditableFieldProps> = ({
           ) : (
             <div className="flex items-center justify-between mt-1">
               <p className="text-white text-base font-medium">{value}</p>
-              <button
-                onClick={handleEdit}
-                className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-[#01C8A9] p-1 transition-opacity duration-300"
+              {isEditable && <button
+                onClick={() => setIsEditing(true)}
+                className="opacity-100 group-hover:opacity-100 text-gray-400 hover:text-[#01C8A9] p-1 transition-opacity duration-300"
                 aria-label={`Edit ${label}`}
               >
                 <Pencil size={16} />
-              </button>
+              </button>}
             </div>
           )}
         </div>
@@ -118,7 +144,7 @@ const AccountPage = () => {
     company: '',
     position: '',
     phone: userdata?.PhoneNo || 'N/A',
-    location: userdata?.address && userdata?.country ? userdata?.address + " " + userdata?.country : "N/A",
+    location: userdata?.address + " " + (userdata?.country || ''),
     joinedDate: ConvertDate(userdata?.createdAt) || 'N/A',
     bio: 'N/A'
   });
@@ -145,6 +171,7 @@ const AccountPage = () => {
       .then((res) => {
         if (res.status) {
           setUserDetails(res.data)
+          localStorage.setItem('user', JSON.stringify(res.data))
         }
         else {
           setUserDetails(null)
@@ -154,25 +181,6 @@ const AccountPage = () => {
         console.log("Error in retrieved user", error)
       })
   }
-  const handleLogout = async () => {
-    try {
-      await logout();
-      toast({
-        title: "Logged out successfully",
-        description: "You have been logged out of your account",
-        variant: "success",
-        duration: 1000,
-      });
-    } catch (error) {
-      console.error("Logout failed", error);
-      toast({
-        title: "Logout failed",
-        description: "There was a problem logging out",
-        variant: "destructive",
-        duration: 1000,
-      });
-    }
-  };
 
   const updateProfile = (field: string, value: string) => {
     setUserProfile(prev => ({ ...prev, [field]: value }));
@@ -186,35 +194,44 @@ const AccountPage = () => {
 
 
   const uploadProfilePicture = async (file) => {
-    setUploading(true);
-    const req = { id: userdata?._id, url: file }
-    await updateProfileImg(req)
-      .then((res) => {
-        if (res.status) {
-          setUploading(false);
-          toast({
-            title: "Profile picture updated",
-            description: "Your profile picture has been updated successfully",
-            variant: "success",
-            duration: 1000,
-          });
-          getUserData()
-        }
-        else {
-          setUploading(false);
-          toast({
-            title: "Error",
-            description: res.message,
-            variant: "destructive",
-            duration: 1000,
-          });
-        }
-      })
-      .catch((error) => {
-        console.log("Error in updating profile img", error)
-      })
+    try {
+      setUploading(true);   
+      const uploadResponse = await uploadImg({ file });
+      if (!uploadResponse?.url) {
+        throw new Error("Failed to upload image to S3");
+      }
+   
+      const req = {
+        id: userdata?._id,
+        url: uploadResponse.url
+      };
+  
+      const updateRes = await updateProfileImg(req);
+  
+      if (updateRes?.status) {
+        toast({
+          title: "Profile picture updated",
+          description: "Your profile picture has been updated successfully",
+          variant: "success",
+          duration: 1000,
+        });
+        getUserData(); // 🔄 Refresh user info
+      } else {
+        throw new Error(updateRes?.message || "Failed to update image in database");
+      }
+    } catch (error) {
+      console.error("Profile image upload error:", error);
+      toast({
+        title: "Upload failed",
+        description: error?.message || "Something went wrong while uploading your profile picture",
+        variant: "destructive",
+        duration: 1500,
+      });
+    } finally {
+      setUploading(false); // 🛑 Stop spinner no matter what
+    }
   };
-
+  
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -233,7 +250,6 @@ const AccountPage = () => {
       transition: { type: "spring", stiffness: 300, damping: 24 }
     }
   };
-
 
   const handleButtonClick = () => {
     fileInputRef.current.click();
@@ -262,28 +278,18 @@ const AccountPage = () => {
   return (
     <>
       <SEO title={endpoint.split('/').pop()} description={"MyAccount"} />
-
       <SidebarProvider defaultOpen={!isMobile}>
         <div className="flex w-full min-h-screen bg-gradient-to-br from-[#001430] to-[#002040] font-sans">
-          <MainSidebar
-            open={sidebarOpen}
-            onOpenChange={setSidebarOpen}
-            onCollapseChange={setSidebarCollapsed}
-          />
-
+          <MainSidebar open={sidebarOpen} onOpenChange={setSidebarOpen} onCollapseChange={setSidebarCollapsed} />
           <div
             className="flex flex-col flex-1 transition-all duration-300 ease-in-out"
             style={{
               width: "100%",
-              marginLeft: isMobile ? 0 : sidebarCollapsed ? '70px' : '230px',
+              marginLeft: isMobile ? 0 : sidebarCollapsed ? '70px' : '250px',
               paddingBottom: isMobile ? '80px' : '20px'
             }}
           >
-            <Header
-              onMenuClick={handleMenuClick}
-              hideAccount={isMobile}
-            />
-
+            <Header onMenuClick={handleMenuClick} hideAccount={isMobile} />
             <div className="flex flex-col p-4 sm:p-6">
               <h1 className="text-white text-xl font-semibold mb-6 flex items-center">
                 <User className="mr-2 text-[#01C8A9]" />
@@ -345,20 +351,6 @@ const AccountPage = () => {
                       </div>
                     </div>
 
-                    {/* Bio section */}
-                    {/* <div className="mb-4">
-                    <Label className="text-white mb-2 block">Bio</Label>
-                    <div className="relative group">
-                      <p className="text-gray-300 bg-[#031123]/50 p-3 rounded-md">{userProfile.bio}</p>
-                      <button
-                        onClick={() => {}}
-                        className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 text-gray-400 hover:text-[#01C8A9] p-1 transition-opacity duration-300"
-                        aria-label="Edit bio"
-                      >
-                        <Pencil size={16} />
-                      </button>
-                    </div>
-                  </div> */}
                   </div>
                 </motion.div>
 
@@ -382,7 +374,9 @@ const AccountPage = () => {
                         value={userProfile.displayName}
                         icon={User}
                         placeholder="Enter your full name"
-                        onSave={(value) => updateProfile('displayName', value)}
+                        onSave={(value) => updateProfile('Username', value)}
+                        isEditable={true}
+                        name="Username"
                       />
                       <EditableField
                         label="Email Address"
@@ -391,6 +385,9 @@ const AccountPage = () => {
                         type="email"
                         placeholder="Enter your email address"
                         onSave={(value) => updateProfile('email', value)}
+                        isEditable={false}
+                        name="email"
+
                       />
                       <EditableField
                         label="Phone Number"
@@ -398,27 +395,19 @@ const AccountPage = () => {
                         icon={Phone}
                         placeholder="Enter your phone number"
                         onSave={(value) => updateProfile('phone', value)}
+                        isEditable={true}
+                        name="PhoneNo"
+
                       />
-                      {/* <EditableField
-                      label="Company"
-                      value={userProfile.company}
-                      icon={Building}
-                      placeholder="Enter your company name"
-                      onSave={(value) => updateProfile('company', value)}
-                    />
-                    <EditableField
-                      label="Position"
-                      value={userProfile.position}
-                      icon={Briefcase}
-                      placeholder="Enter your job position"
-                      onSave={(value) => updateProfile('position', value)}
-                    /> */}
                       <EditableField
                         label="Location"
                         value={userProfile.location}
                         icon={MapPin}
                         placeholder="Enter your location"
                         onSave={(value) => updateProfile('location', value)}
+                        isEditable={true}
+                        name="address"
+
                       />
                     </div>
                   </div>

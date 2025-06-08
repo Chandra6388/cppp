@@ -25,7 +25,7 @@ const LoginPage = () => {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const { toast } = useToast();
-    const token = JSON.parse(localStorage.getItem("token") || "null");
+    const token = JSON.parse(localStorage.getItem("ResetPasswordtoken") || "null");
 
 
     const form = useForm<LoginFormValues>({

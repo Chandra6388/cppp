@@ -50,7 +50,7 @@ const LoginPage = () => {
                 duration: 1000,
             });
             if (res?.status) {
-                localStorage.setItem("token", JSON.stringify(res?.token))
+                localStorage.setItem("ResetPasswordtoken", JSON.stringify(res?.token))
                 navigate('/login')
                 setLoading(false);
             } else {

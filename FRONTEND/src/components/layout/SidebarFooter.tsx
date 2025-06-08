@@ -1,6 +1,6 @@
 
 import React from "react";
-import { MoveLeft } from "lucide-react";
+import { LogOut  } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
@@ -101,12 +101,12 @@ const SidebarFooter: React.FC<SidebarFooterProps> = ({
       <button
         onClick={handleLogout}
         className={cn(
-          "w-full bg-[#ee3232] hover:bg-[#dd7474] text-white text-base font-medium py-2 px-2 rounded-md flex items-center justify-center gap-2 transition-all duration-300 hover:shadow-lg relative z-10 overflow-hidden group",
+          "w-full bg-[#ff8989] hover:bg-[#dd7474] text-white text-base font-medium py-2 px-2 rounded-md flex items-center justify-center gap-2 transition-all duration-300 hover:shadow-lg relative z-10 overflow-hidden group",
           showInitialAnimation && "animate-button-reveal animation-delay-900"
         )}
       >
         <span className="relative z-10 flex items-center gap-1">
-          <MoveLeft /> Log Out
+          <LogOut  /> Log Out
         </span>
         <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 group-hover:translate-x-full transition-all duration-700 ease-in-out" />
       </button>

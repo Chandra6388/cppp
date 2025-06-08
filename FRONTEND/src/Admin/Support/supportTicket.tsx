@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Circle, CheckCircle2, BanIcon, Clock, TicketPlus, Search, Plus, Filter, User } from "lucide-react";
 import CreateTicketModal from "@/components/modals/CreateTicketModal";
-import TicketDetailModal from "@/components/modals/TicketDetailModal";
+import TicketDetailModal from "@/components/modals/TicketDetailModalAdmin";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { allTickets, assigneToSupport, changeStatus, getAllEmployees } from '@/service/admin/supportTickets.service'
@@ -246,7 +246,7 @@ const TicketsPage = () => {
           className="flex flex-col flex-1 transition-all duration-300 ease-in-out"
           style={{
             width: "100%",
-            marginLeft: isMobile ? 0 : sidebarCollapsed ? '70px' : '230px'
+            marginLeft: isMobile ? 0 : sidebarCollapsed ? '70px' : '250px'
           }}
         >
           <Header onMenuClick={handleMenuClick} />

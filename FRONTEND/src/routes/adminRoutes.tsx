@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-route
 import { Toaster } from "@/components/ui/toaster";
 import Dashboard from "@/Admin/dashboard/Dashboard";
 import SupportTicket from "@/Admin/Support/supportTicket";
+import Broadcast from "@/Admin/broadcast/Broadcast";
+
 
  
 import NotFound from "@/pages/NotFound";
@@ -16,6 +18,7 @@ const UserRoute = () => {
       <Routes>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/support-tickets" element={<SupportTicket />} />
+        <Route path="/broadcast" element={<Broadcast />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Toaster />

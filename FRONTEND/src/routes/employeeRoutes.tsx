@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-route
 import { Toaster } from "@/components/ui/toaster";
 import Dashboard from "@/Employee/dashboard/dashboard";
 import SupportTicket from "@/Employee/Support/supportTicket";
+import Notifications from "@/pages/NotificationsPage";
 
 
 import NotFound from "@/pages/NotFound";
@@ -15,6 +16,8 @@ const EmployeeRoute = () => {
       <Routes>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/tickets" element={<SupportTicket />} />
+        <Route path="/notifications" element={<Notifications />} />
+
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Toaster />

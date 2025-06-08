@@ -11,6 +11,8 @@ import {
   Settings,
   Trash,
   Box,
+  Bell,
+  RadioTower 
 } from "lucide-react";
 import {
   SidebarMenu,
@@ -41,10 +43,14 @@ const SidebarMenuItems = ({
     ADMIN: [
       { path: "/admin/dashboard", label: "Home", icon: Home },
       { path: "/admin/support-tickets", label: "Support Tickets", icon: TicketCheck },
+      { path: "/admin/broadcast", label: "Broadcast", icon: RadioTower  },
+
     ],
     EMPLOYEE: [
       { path: "/employee/dashboard", label: "Home", icon: Home },
       { path: "/employee/tickets", label: "Tickets", icon: TicketCheck, showUnread: true },
+      { path: "/employee/notifications", label: "Notifications", icon: Bell },
+
     ],
     USER: [
       { path: "/user/dashboard", label: "Home", icon: Home },
@@ -52,6 +58,7 @@ const SidebarMenuItems = ({
       { path: "/user/templates", label: "Templates", icon: Box },
       { path: "/user/tickets", label: "Tickets", icon: TicketCheck, showUnread: true },
       { path: "/user/support", label: "Support & Help", icon: HelpCircle },
+      { path: "/user/notifications", label: "Notifications", icon: Bell },
       { path: "/user/account", label: "My Account", icon: UserCircle },
       { path: "/user/settings", label: "Settings", icon: Settings },
       { path: "/user/recycle-bin", label: "Recycle Bin", icon: Trash },

@@ -19,51 +19,8 @@ import 'react-image-crop/dist/ReactCrop.css';
 import * as Config from "../../Utils/config";
 import Cropper, { Area } from 'react-easy-crop';
 import Slider from '@mui/material/Slider';
-interface ButtonOption {
-  id: string;
-  text: string;
-  type: string;
-  connect_with: string;
-  color: string;
-  fontStyle: "normal" | "italic" | "bold" | "boldItalic";
-}
-
-interface SocialMediaOption {
-  id: string;
-  type: string;
-  link: string;
-  icon: string;
-}
-
-interface BackgroundOption {
-  id: string;
-  background_type: 'color' | 'gradient' | 'image';
-  background_value: string;
-  label?: string;
-}
-
-interface FormData {
-  fullName: string;
-  jobTitle: string;
-  company: string;
-  phone: string;
-  email: string;
-  website: string;
-  headshot_url?: string;
-  address: string;
-}
-
-interface SingleSignature {
-  _id: string,
-  SignatureName: string,
-  Templates_Id: string,
-  details: {
-    html: string;
-    background: {
-      background_value: string
-    }
-  }
-}
+import { uploadImg } from "@/service/auth/auth.service";
+import { SingleSignature, SocialMediaOption, ButtonOption, BackgroundOption, FormData } from "../../Utils/UserInterface";
 
 const SignatureEditorPageRedesigned = () => {
   const navigate = useNavigate()
@@ -87,6 +44,7 @@ const SignatureEditorPageRedesigned = () => {
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     fullName: userDetails?.FirstName + " " + userDetails?.LastName,
     jobTitle: "",
@@ -382,8 +340,8 @@ const SignatureEditorPageRedesigned = () => {
     "visit_website": "https://los-static.s3.us-east-1.amazonaws.com/tv/s-icon/globe-v2.png",
   }
 
-  
-  const buttonsHtml = selectedButtons.map((button) => {
+
+  const buttonsHtml1 = selectedButtons.map((button) => {
     let link = button.connect_with || "#";
 
     const fontStyle = button.fontStyle === "italic"
@@ -423,6 +381,37 @@ const SignatureEditorPageRedesigned = () => {
     `;
   }).join("");
 
+  const buttonsHtml = selectedButtons.map((button) => {
+    let link = button.connect_with || "#";
+    if (button.type === "contact_us") {
+      link = `tel:${button.connect_with}`;
+    }
+  
+    const fontStyle = button.fontStyle === "italic"
+      ? "font-style: italic;"
+      : button.fontStyle === "bold"
+        ? "font-weight: bold;"
+        : button.fontStyle === "boldItalic"
+          ? "font-style: italic; font-weight: bold;"
+          : "";
+  
+    const backgroundColor = colorMapping[button?.color] || "#000";
+  
+    return `
+      <span style="background-color: ${backgroundColor}; display: inline-block; border-radius: 10px; margin: 4px;">
+        <a 
+          href="${`${Config.base_url}track-click?btnName=${encodeURIComponent(button.type)}&url=${encodeURIComponent(link)}&userId=${encodeURIComponent(userDetails?._id)}&linkType=btn&signatureId=__SIGNATURE_ID__`}" 
+          class="email-btn" 
+          style="color: #ffffff; text-decoration: none; display: inline-flex; align-items: center; padding: 6px 10px; ${fontStyle} font-size: 12px;">
+          <img src="${btnsIcons[button.type]}" width="15px" style="margin-right: 4px; vertical-align: middle;" />
+          ${button.text}
+        </a>
+      </span>
+    `;
+  }).join("");
+  
+
+  
 
 
   const socialMediaIcons = {
@@ -626,7 +615,7 @@ const SignatureEditorPageRedesigned = () => {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setCropSrc(reader.result as string);
+        setCropSrc(reader.result as string); // base64 preview
         setShowCropper(true);
       };
       reader.readAsDataURL(file);
@@ -638,61 +627,78 @@ const SignatureEditorPageRedesigned = () => {
   }, []);
 
 
-  const getCroppedImg = (imageSrc: string, crop: Area): Promise<string> => {
+  const getCroppedImg = (imageSrc: string, crop: Area): Promise<Blob> => {
     return new Promise((resolve, reject) => {
       const image = new window.Image();
       image.src = imageSrc;
       image.crossOrigin = 'anonymous';
+
       image.onload = () => {
         const canvas = document.createElement('canvas');
         canvas.width = crop.width;
         canvas.height = crop.height;
         const ctx = canvas.getContext('2d');
-        if (!ctx) return reject('Failed to get context');
+        if (!ctx) return reject('Canvas context not found');
 
-        ctx.drawImage(image, crop.x, crop.y, crop.width, crop.height, 0, 0, crop.width, crop.height);
+        ctx.drawImage(
+          image,
+          crop.x,
+          crop.y,
+          crop.width,
+          crop.height,
+          0,
+          0,
+          crop.width,
+          crop.height
+        );
 
         canvas.toBlob((blob) => {
           if (!blob) return reject('Canvas is empty');
-          const fileUrl = URL.createObjectURL(blob);
-          resolve(fileUrl);
+          resolve(blob); // ✅ This is what we upload
         }, 'image/jpeg');
       };
-      image.onerror = () => reject('Image load error');
+
+      image.onerror = () => reject('Image load failed');
     });
   };
 
-  const blobUrlToBase64 = (blobUrl: string): Promise<string> => {
-    return fetch(blobUrl)
-      .then(res => res.blob())
-      .then(blob => {
-        return new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            if (typeof reader.result === 'string') {
-              resolve(reader.result);
-            } else {
-              reject('Failed to convert to base64');
-            }
-          };
-          reader.onerror = reject;
-          reader.readAsDataURL(blob);
-        });
-      });
-  };
 
 
   const handleCropApply = async () => {
     if (!cropSrc || !croppedAreaPixels) return;
-    const croppedImage = await getCroppedImg(cropSrc, croppedAreaPixels);
-    const base64Image = await blobUrlToBase64(croppedImage);
-    setFormData(prev => ({
-      ...prev,
-      headshot_url: base64Image as string
-    }));
-    setShowCropper(false);
-    setCropSrc(null);
+
+    try {
+      setUploading(true);
+      const blob = await getCroppedImg(cropSrc, croppedAreaPixels);
+      const uploadRes = await uploadImg({ file: blob });
+
+      if (!uploadRes?.url) throw new Error('Upload failed');
+
+      setFormData(prev => ({
+        ...prev,
+        headshot_url: uploadRes.url
+      }));
+
+      toast({
+        title: 'Upload Success',
+        description: 'Image uploaded to AWS S3',
+        variant: 'success',
+        duration: 1500
+      });
+
+    } catch (err: any) {
+      toast({
+        title: 'Upload failed',
+        description: err.message || 'Something went wrong',
+        variant: 'destructive'
+      });
+    } finally {
+      setUploading(false);
+      setShowCropper(false);
+      setCropSrc(null);
+    }
   };
+
 
 
   const formField = [
@@ -748,8 +754,6 @@ const SignatureEditorPageRedesigned = () => {
 
   ]
 
- 
-  
   const availableButtonTypes = [
     { text: "Contact Us", type: "contact_us" },
     { text: "Join Meeting", type: "join_meeting" },
@@ -778,7 +782,7 @@ const SignatureEditorPageRedesigned = () => {
           className="flex flex-col flex-1 transition-all duration-300 ease-in-out"
           style={{
             width: "100%",
-            marginLeft: isMobile ? 0 : sidebarCollapsed ? '70px' : '230px',
+            marginLeft: isMobile ? 0 : sidebarCollapsed ? '70px' : '250px',
             paddingBottom: isMobile ? '80px' : '0'
           }}
         >
@@ -897,20 +901,11 @@ const SignatureEditorPageRedesigned = () => {
                                     >
                                       Cancel
                                     </button>
-                                    {/* <button
-                                    onClick={handleCropApply}
-                                    variant="darkOutline"
-                                    className="text-white flex items-center gap-1"
-                                  >
-                                    Apply
-                                  </button> */}
-                                    <Button
-                                      variant="teal"
-                                      onClick={handleCropApply}
-                                      className="text-white"
-                                    >
-                                      Apply
+                                     
+                                    <Button onClick={handleCropApply}  variant="teal"  className="text-white" disabled={uploading}>
+                                      {uploading ? "Uploading..." : "Apply"}
                                     </Button>
+                                    
                                   </div>
                                 </div>
                               </div>
@@ -984,7 +979,7 @@ const SignatureEditorPageRedesigned = () => {
                                         value={button.type}
                                         onChange={(e) => handleButtonChange(button.id, "type", e.target.value)}
                                       >
-                                     {availableButtonTypes.map((opt) => (
+                                        {availableButtonTypes.map((opt) => (
                                           <option
                                             key={opt.type}
                                             value={opt.type}
@@ -1141,7 +1136,7 @@ const SignatureEditorPageRedesigned = () => {
                                         value={items.type}
                                         onChange={(e) => handlSocialMediaChange(items.id, "type", e.target.value)}
                                       >
-                                      {availableSocialMediaTypes.map((type) => (
+                                        {availableSocialMediaTypes.map((type) => (
                                           <option
                                             key={type}
                                             value={type}
