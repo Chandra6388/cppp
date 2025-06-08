@@ -19,5 +19,7 @@ module.exports = {
   ChatMessageDb: require('./chatMessage.Model'),
   supportChatDb: require('./supportChat.model'),
   NotificationDb: require('./Notification.model'),
-  UnreadSupportChat: UnreadSupportChat   // ✅ Add comma above
+  isBroadcastReadDB: require('./isBroadcastRead.model'),
+
+  UnreadSupportChat: UnreadSupportChat
 };

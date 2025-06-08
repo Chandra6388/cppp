@@ -1,11 +1,50 @@
 const db = require('../models');
 const supportChatDb = db.supportChatDb;
+const NotificationDb = db.NotificationDb;
+const isBroadcastReadDB= db.isBroadcastReadDB
+
 const userSocketMap = new Map();
-const NotificationDb = db.NotificationDb
+const openTicketWindows = new Map();  
 
 function supportChatSocketHandler(io) {
   io.on("connection", (socket) => {
     console.log("🟢 Socket connected:", socket.id);
+
+    socket.on("receiver_chat_presence", ({ receiverId, ticketId }) => {
+      if (!openTicketWindows.has(receiverId)) {
+        openTicketWindows.set(receiverId, new Set());
+      }
+      openTicketWindows.get(receiverId).add(ticketId);
+      console.log(`✅ Receiver ${receiverId} opened chat for ticket ${ticketId}`);
+    });
+
+    socket.on("receiver_chat_absence", ({ receiverId, ticketId }) => {
+      if (openTicketWindows.has(receiverId)) {
+        openTicketWindows.get(receiverId).delete(ticketId);
+        if (openTicketWindows.get(receiverId).size === 0) {
+          openTicketWindows.delete(receiverId);
+        }
+      }
+      console.log(`❌ Receiver ${receiverId} closed chat for ticket ${ticketId}`);
+    });
+
+    socket.on("open_ticket_chat", ({ userId, ticketId }) => {
+      if (!openTicketWindows.has(userId)) {
+        openTicketWindows.set(userId, new Set());
+      }
+      openTicketWindows.get(userId).add(ticketId);
+      console.log(`🟢 ${userId} opened ticket ${ticketId}`);
+    });
+
+    socket.on("close_ticket_chat", ({ userId, ticketId }) => {
+      if (openTicketWindows.has(userId)) {
+        openTicketWindows.get(userId).delete(ticketId);
+        if (openTicketWindows.get(userId).size === 0) {
+          openTicketWindows.delete(userId);
+        }
+      }
+      console.log(`🔴 ${userId} closed ticket ${ticketId}`);
+    });
 
     socket.on("typing", ({ ticketId, senderId }) => {
       socket.to(ticketId).emit("typingsuport", { senderId });
@@ -35,6 +74,7 @@ function supportChatSocketHandler(io) {
           sender: chatDetails.sender,
           timestamp: new Date(),
           isRead: false,
+          type: "message",
         });
 
         // 2. Emit message to the ticket room
@@ -45,7 +85,7 @@ function supportChatSocketHandler(io) {
           ticketId: chatDetails.ticketId,
           reciverId: chatDetails.reciverId,
           isRead: false,
-          sender: chatDetails.sender, // Only from sender
+          sender: chatDetails.sender,
         });
 
         io.to(chatDetails.reciverId).emit("unseen-message-count", {
@@ -53,15 +93,27 @@ function supportChatSocketHandler(io) {
           count: ticketUnreadCount,
         });
 
-        // 4. Create a notification for the receiver
-        await NotificationDb.create({
-          reciverId: chatDetails.reciverId,
-          type: "message",
-          title: "New Support Message",
-          ticketId: chatDetails.ticketId,
-          message: chatDetails.text,
-          isRead: false,
-        });
+        // 4. Conditionally create notification based on receiver chat presence
+        // const isChatOpen =
+        //   openTicketWindows.has(chatDetails.reciverId) &&
+        //   openTicketWindows.get(chatDetails.reciverId).has(chatDetails.ticketId);
+ 
+
+        // if (!isChatOpen) {
+        //   const newNotification = await NotificationDb.create({
+        //     reciverId: chatDetails.reciverId,
+        //     type: "message",
+        //     title: chatDetails.sender == "user" ? "New User Message" : "New Support Message",
+        //     ticketId: chatDetails.ticketId,
+        //     message: chatDetails.text,
+        //     isRead: false,
+        //   });
+
+        //   io.to(chatDetails.reciverId).emit("new_notification", newNotification);
+        //   console.log("📨 Notification created.");
+        // } else {
+        //   console.log("🔕 Chat is open — notification skipped.");
+        // }
 
       } catch (err) {
         console.error("❌ DB Error (support_message):", err);
@@ -71,7 +123,7 @@ function supportChatSocketHandler(io) {
       }
     });
 
-    socket.on("mark_as_read", async ({ ticketId, readerType, reciverId }) => {
+    socket.on("mark_as_read", async ({ ticketId, readerType, reciverId, senderId }) => {
       try {
         await supportChatDb.updateMany(
           {
@@ -81,16 +133,14 @@ function supportChatSocketHandler(io) {
           },
           { $set: { isRead: true } }
         );
-
         await NotificationDb.updateMany(
           {
-            ticketId, 
-            reciverId,
+            ticketId,
+            reciverId: senderId,
             isRead: false,
           },
           { $set: { isRead: true } }
         );
-
 
         socket.emit("messages_marked_as_read", { ticketId, readerType });
         socket.to(ticketId).emit("messages_marked_as_read", { ticketId, readerType });
@@ -130,12 +180,41 @@ function supportChatSocketHandler(io) {
       }
     });
 
+    socket.on("mark_all_notifications_read", async ({ userId, readerType }) => {
+      try {
+
+        await supportChatDb.updateMany({ reciverId: userId, sender: { $ne: readerType }, isRead: false, }, { $set: { isRead: true } });
+        await NotificationDb.updateMany({ reciverId: userId, isRead: false }, { $set: { isRead: true } });
+        socket.emit("all_notifications_read", { userId });
+
+      } catch (err) {
+        console.error("❌ Error marking all notifications as read:", err);
+      }
+    }
+    );
+
+    socket.on("broadcast_message", async ({ title, message, audience, time }) => {
+
+    const newNotification =   await NotificationDb.create({
+        type: "broadcast",
+        title: "New Feature Announcement",
+        message: message,
+        audience: audience,
+      })
+
+      
+
+      console.log("C", time, audience, title, message)
+
+    })
+
     socket.on("disconnect", () => {
       console.log("🔴 Socket disconnected:", socket.id);
       for (const [userId, sockId] of userSocketMap.entries()) {
         if (sockId === socket.id) {
           userSocketMap.delete(userId);
-          console.log(`🗑️ Removed user ${userId} from socket map`);
+          openTicketWindows.delete(userId);
+          console.log(`🗑️ Removed user ${userId} from socket map and open ticket windows`);
           break;
         }
       }

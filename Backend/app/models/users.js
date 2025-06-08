@@ -11,8 +11,7 @@ const userModel = new Schema({
         default: null
     },
     LastName: {
-        type: String,
-        required: true,
+        type: String, 
         trim: true,
         default: null
     },
@@ -20,7 +19,6 @@ const userModel = new Schema({
         type: String,
         required: true,
         trim: true,
-        unique: true,
         default: null
     },
     profile_img: {
@@ -45,7 +43,6 @@ const userModel = new Schema({
     },
     Password: {
         type: String,
-        required: true,
         trim: true,
         default: null
     },
@@ -95,6 +92,10 @@ const userModel = new Schema({
     isNotifyViaWhatsapp: {
         type: Boolean,
         default: true
+    },
+    isGoogleLogin : {
+        type: Boolean,
+        default: false
     },
     Role: {
         type: String,

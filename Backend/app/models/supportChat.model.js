@@ -22,6 +22,12 @@ const supportChatSchema = Schema({
         type: String,
         required: true
     },
+    type: {
+        type: String,
+        required: true,
+        enum: ["message", "announcement", "system"],
+        trim: true
+    },
     sender: {
         type: String,
         enum: ['user', 'support'],
@@ -35,7 +41,11 @@ const supportChatSchema = Schema({
         type: Date,
         default: Date.now
     },
-});
+},
+    {
+        timestamps: true
+    },
+);
 
 const supportChat_model = model('supportChat', supportChatSchema);
 

@@ -627,39 +627,44 @@ class Signature {
   async trackClick(req, res) {
     try {
       const { url, btnName, userId, linkType, signatureId } = req.query;
-
+  
       if (!url || !btnName) {
         return res.send({ status: false, message: 'Missing URL or Button Name' });
       }
-
+  
+      // Device info parsing
       const userAgent = req.headers['user-agent'];
       const parser = new UAParser(userAgent);
       const result = parser.getResult();
-
+  
       let deviceType = result.device?.type ?? 'unknown';
       if ((deviceType === 'unknown' || deviceType === 'desktop') && userAgent.includes("Android") && !userAgent.includes("Mobile")) {
         deviceType = 'tablet';
       } else if (deviceType === 'unknown') {
         deviceType = 'desktop';
       }
-
+  
       const os = result.os?.name || 'Unknown OS';
       const browser = result.browser?.name || 'Unknown Browser';
-
-      // Fix: Ensure URL includes protocol
+  
+      // Normalize and validate URL
       let finalUrl = decodeURIComponent(url);
-      if (!/^https?:\/\//i.test(finalUrl)) {
+      const isTelOrMail = /^tel:|^mailto:/i.test(finalUrl);
+  
+      // Add https:// only for non-special URLs
+      if (!/^https?:\/\//i.test(finalUrl) && !isTelOrMail) {
         finalUrl = `https://${finalUrl}`;
       }
-
-      // Optional: Validate final URL
+   
       try {
-        new URL(finalUrl);
+        if (!isTelOrMail) {
+          new URL(finalUrl);
+        }
       } catch (err) {
         return res.send({ status: false, message: 'Invalid final URL format' });
       }
-
-      // Save to DB
+  
+      // Save click tracking data
       await TrackBtnClickedDB.create({
         BtnName: btnName,
         ClickCount: 1,
@@ -670,14 +675,16 @@ class Signature {
         os,
         browser
       });
-
+  
+      // Redirect to the intended link
       return res.redirect(finalUrl);
+  
     } catch (error) {
       console.error('Error tracking button click:', error);
       return res.status(500).send({
         status: false,
         message: 'Internal Server Error',
-        error: error.message // Add error message for debugging
+        error: error.message
       });
     }
   }

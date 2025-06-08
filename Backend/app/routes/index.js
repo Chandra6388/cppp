@@ -8,6 +8,9 @@ module.exports = function (app) {
     app.use(require("./employee/dashbaordRoutes"));
     app.use(require("./employee/ticketRoutes"));
     app.use(require("./user/settingRoutes"));
+    app.use(require("./user/notificationRoutes"));
+    app.use(require("./imageUploadRoutes"));
+
 
 
 

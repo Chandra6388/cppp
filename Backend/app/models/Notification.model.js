@@ -3,39 +3,39 @@ const mongoose = require("mongoose");
 const { Schema, model } = mongoose;
 
 const Notifications = new Schema({
-  reciverId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "users",
-    required: true
-  },
-  ticketId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "supporttickets",
+  text: {
+    type: String,
+    required: true,
+    trim: true,
     default: null
   },
   type: {
     type: String,
     required: true,
-    enum: ["message", "announcement", "system"],
+    enum: ["message", "announcement", "broadcast"],
     trim: true
   },
-  title: {
+  audience: {
     type: String,
-    required: true,
-    trim: true,
-    default: null
+    enum: ["all", "user", "employee"],
+    default: "all"
   },
-  message: {
-    type: String,
-    required: true,
-    trim: true,
-    default: null
-  },
-  isRead: {
-    type: Boolean,
-    required: true,
-    default: false
-  }
+
+  isRead: [
+    {
+      userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "users",
+        required: true
+      },
+      status: {
+        type: Boolean,
+        required: true,
+        default: false
+      },
+    }
+  ]
+
 }, {
   timestamps: true
 });

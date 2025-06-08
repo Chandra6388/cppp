@@ -21,11 +21,13 @@ const ChatMessageSchema = Schema({
         type: String,
         required: true
     },
-    timestamp: {
-        type: Date,
-        default: Date.now
-    },
-});
+
+}
+    , {
+        timestamps: true,
+    }
+
+);
 
 const ChatMessage_model = model('ChatMessage', ChatMessageSchema);
 

@@ -23,16 +23,19 @@ class Auth {
         const user = await UserDb.findOne({ Email: Email });
 
 
-
         if (!user) {
             return res.send({ status: false, message: "User not found" });
+        }
+
+        if (user?.isGoogleLogin) {
+            return res.send({ status: false, message: "You have logged in using Google. Please use the Google login option for future logins." });
         }
         const isMatch = await bcrypt.compare(Password, user?.Password);
         if (!isMatch) {
             return res.send({ status: false, message: "Invalid credentials" });
         }
 
-        const token = jwt.sign({ id: user?._id }, process.env.SECRET, { expiresIn: "1h" });
+        const token = jwt.sign({ id: user?._id, Role: user?.Role }, process.env.SECRET, { expiresIn: "6h" });
         const { password: _, ...userWithoutPassword } = user?.toObject();
 
 
@@ -41,7 +44,7 @@ class Auth {
             message: "Login successful",
             user: userWithoutPassword,
             token: token,
-            expiresIn: 3600
+            expiresIn: "6h"
         });
 
 
@@ -77,6 +80,32 @@ class Auth {
             return res.send({ status: true, message: "User registered successfully", user: savedUser });
         } catch (error) {
             return res.send({ status: false, message: "Error registering user", error });
+        }
+    }
+    async updateUser(req, res) {
+
+        const { id, name, value } = req.body;
+        if (!id) {
+            return res.send({ status: false, message: "User ID is required" });
+        }
+        if (!name) {
+            return res.send({ status: false, message: "Name is required" });
+        }
+        try {
+            const user = await UserDb.findById(id);
+            if (!user) {
+                return res.send({ status: false, message: "User not found" });
+            }
+
+            const updatedData = await UserDb.findByIdAndUpdate(id, { [name]: value }, { new: true });
+            if (!updatedData) {
+                return res.send({ status: false, message: "Error updating user" });
+            }
+
+            return res.send({ status: true, message: "User updated successfully" });
+        } catch (error) {
+            console.error("Error updating user:", error);
+            return res.send({ status: false, message: "Internal server error", error });
         }
     }
 
@@ -275,71 +304,36 @@ class Auth {
                 audience: process.env.ClientID
             });
             const payload = ticket.getPayload();
-
             let IfExitingUser = await UserDb.findOne({ Email: payload.email })
-            return res.send({ status: true, message: "User Login Successfully", data: IfExitingUser ? IfExitingUser : payload, isNewUser: IfExitingUser ? true : false });
+
+
+
+            if (!IfExitingUser) {
+               const newUser = new UserDb({
+                    FirstName: payload?.given_name,
+                    LastName: payload?.family_name || "",
+                    Username: payload?.name || payload?.email.split('@')[0],
+                    Email: payload?.email,
+                    PhoneNo: payload?.phone || null,
+                    profile_img: payload?.picture || "",
+                    isGoogleLogin: true
+                });
+                IfExitingUser = await newUser.save();
+            }
+
+            const logintoken = jwt.sign({ id: IfExitingUser?._id }, process.env.SECRET, { expiresIn: "6h" });
+
+            return res.send({
+                status: true,
+                message: "User Login Successfully",
+                data: IfExitingUser,
+                logintoken: logintoken,
+                expiresIn: "6h"
+            });
 
         } catch (err) {
             console.error('Google login failed:', err);
             res.send({ status: false, message: 'Invalid token' });
-        }
-    }
-
-    async AddNewUser(req, res) {
-        const { FirstName, LastName, Username, profile_img, Email, PhoneNo, Password } = req.body
-
-        if (!Username) {
-            return res.send({ status: false, message: "User name is require" })
-
-        }
-        if (!PhoneNo) {
-            return res.send({ status: false, message: "Phone number is require" })
-
-        }
-        if (!Password) {
-            return res.send({ status: false, message: "Password is require" })
-        }
-
-        const isExistingUser = await UserDb.findOne({
-            $or: [
-                { Username: Username },
-                { PhoneNo: PhoneNo }
-            ]
-        });
-
-        if (isExistingUser) {
-            if (isExistingUser?.Username == Username) {
-                return res.send({ status: false, message: "Username Already exit" })
-            }
-
-            if (isExistingUser?.PhoneNo == PhoneNo) {
-                return res.send({ status: false, message: "Phone number Already exit" })
-            }
-        }
-
-        const hashedPassword = await bcrypt.hash(Password, 10);
-        const newUser = new UserDb({
-            FirstName,
-            LastName,
-            Username,
-            Email,
-            Password: hashedPassword,
-            PhoneNo,
-            profile_img
-        });
-
-        try {
-            const savedUser = await newUser.save();
-
-            const jwtToken = jwt.sign(
-                { id: savedUser._id, email: savedUser.Email },
-                process.env.SECRET,
-                { expiresIn: '1h' }
-            );
-            res.send({ status: true, message: "User Login Successfully", token: jwtToken, data: savedUser });
-
-        } catch (error) {
-            return res.send({ status: false, message: "Error registering user", error });
         }
     }
 
@@ -441,10 +435,10 @@ class Auth {
         const { filter_type, start_date, end_date } = req.body;
 
         try {
-         
+
             const now = new Date();
             let dateFilter = {};
-            let labelFormat = "%Y-%m-%d"; 
+            let labelFormat = "%Y-%m-%d";
 
             if (filter_type === "today") {
                 const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -486,7 +480,7 @@ class Auth {
             const rawData = await UserDb.aggregate([
                 {
                     $match: {
-                        Role:"USER",
+                        Role: "USER",
                         createdAt: dateFilter
                     }
                 },
