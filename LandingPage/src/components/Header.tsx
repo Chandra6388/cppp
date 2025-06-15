@@ -1,13 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "react-router-dom";
+import * as Config from "../Utils/config";
 
-interface HeaderProps {
-  onAuthAction: (action: 'signin' | 'signup') => void;
-}
-
-const Header = ({ onAuthAction }: HeaderProps) => {
+const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
@@ -18,6 +14,7 @@ const Header = ({ onAuthAction }: HeaderProps) => {
     { name: "Services", path: "/services" },
     { name: "Signatures", path: "/signatures" },
     { name: "Tutorial", path: "/tutorial" },
+    { name: "Blog", path: "/blog" },
     { name: "Insights", path: "/insights" },
     { name: "Contact", path: "/contact" }
   ];
@@ -51,6 +48,15 @@ const Header = ({ onAuthAction }: HeaderProps) => {
     };
   }, [isMenuOpen]);
 
+
+  
+  const handleLogin = ()=>{
+    window.location.href = `${Config.FRONTEND_URL}login`;
+  }
+
+  const handleSignup = ()=>{
+    window.location.href = `${Config.FRONTEND_URL}signup`;
+  }
   return (
     <>
       <header className={`fixed top-0 w-full z-50 ${isScrolled ? 'bg-black/90' : 'bg-black/60'} backdrop-blur-2xl border-b border-cyan-500/20 shadow-2xl shadow-cyan-500/10 transition-all duration-500`}>
@@ -89,15 +95,15 @@ const Header = ({ onAuthAction }: HeaderProps) => {
             {/* Enhanced Desktop Auth Buttons */}
             <div className="hidden lg:flex items-center space-x-4">
               <Button 
-                variant="ghost" 
-                onClick={() => onAuthAction('signin')}
-                className="text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-cyan-500/20 hover:to-purple-500/20 transition-all duration-500 transform hover:scale-105 border border-transparent hover:border-cyan-400/30"
+                className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 px-4 py-2 from-cyan-500 to-purple-500 hover:from-cyan-400 hover:to-purple-400 text-white shadow-2xl shadow-cyan-500/30 hover:shadow-cyan-500/50 transition-all duration-500 transform hover:scale-105 hover:-translate-y-1"
+                onClick={handleLogin}
+                style={{background: "none" , border: "1px solid #f3ebeb"}}
               >
-                Login
+                 Login 
               </Button>
               <Button 
-                onClick={() => onAuthAction('signup')}
                 className="bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-400 hover:to-purple-400 text-white shadow-2xl shadow-cyan-500/30 hover:shadow-cyan-500/50 transition-all duration-500 transform hover:scale-105 hover:-translate-y-1"
+                onClick={handleSignup}
               >
                 Sign Up Free
               </Button>
@@ -150,22 +156,16 @@ const Header = ({ onAuthAction }: HeaderProps) => {
                 <div className="border-t border-cyan-500/20 pt-8 space-y-4 mt-8">
                   <Button 
                     variant="ghost" 
-                    onClick={() => {
-                      onAuthAction('signin');
-                      setIsMenuOpen(false);
-                    }}
+                    asChild
                     className="w-full text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-cyan-500/20 hover:to-purple-500/20 text-lg py-4 justify-center"
                   >
-                    Login
+                    <Link to="/login" onClick={() => setIsMenuOpen(false)}>Login</Link>
                   </Button>
                   <Button 
-                    onClick={() => {
-                      onAuthAction('signup');
-                      setIsMenuOpen(false);
-                    }}
+                    asChild
                     className="w-full bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-400 hover:to-purple-400 text-white text-lg py-4 justify-center"
                   >
-                    Sign Up Free
+                    <Link to="/signup" onClick={() => setIsMenuOpen(false)}>Sign Up Free</Link>
                   </Button>
                 </div>
               </div>

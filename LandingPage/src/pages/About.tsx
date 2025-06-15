@@ -109,7 +109,7 @@ const About = () => {
       </section>
 
       {/* Team Section */}
-      <section id="team" data-section className="py-32 section-dark">
+      {/* <section id="team" data-section className="py-32 section-dark">
         <div className="container mx-auto px-4">
           <div className={`text-center mb-20 transition-all duration-1000 ${isSectionVisible('team') ? 'animate-fade-in-up' : 'opacity-0'}`}>
             <h2 className="text-5xl font-light mb-8 text-white">
@@ -151,7 +151,7 @@ const About = () => {
               </div>)}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Journey Section */}
       <section id="journey" data-section className="py-32 section-dark">
@@ -174,7 +174,7 @@ const About = () => {
           }, {
             year: "2021",
             title: "First Launch",
-            desc: "Released our MVP and gained our first 1,000 users who believed in our vision for smarter email signatures.",
+            desc: "Released our MVP and gained our first 500 users who believed in our vision for smarter email signatures.",
             icon: Rocket
           }, {
             year: "2022",
@@ -184,7 +184,7 @@ const About = () => {
           }, {
             year: "2023",
             title: "Global Expansion",
-            desc: "Reached 50,000+ users across 100+ countries, establishing ourselves as the leading signature platform.",
+            desc: "Reached 10,000+ users across 5+ countries, establishing ourselves as the leading signature platform.",
             icon: Globe
           }, {
             year: "2024",

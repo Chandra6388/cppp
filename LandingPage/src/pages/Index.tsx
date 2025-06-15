@@ -6,21 +6,26 @@ import ServicesSection from "../components/ServicesSection";
 import TestimonialsSection from "../components/TestimonialsSection";
 import ContactSection from "../components/ContactSection";
 import Footer from "../components/Footer";
+import { useNavigate } from "react-router-dom";
 
-interface IndexProps {
-  onAuthAction: (action: 'signin' | 'signup') => void;
-}
+const Index = () => {
+  const navigate = useNavigate();
 
-const Index = ({ onAuthAction }: IndexProps) => {
+  const handleAuthAction = (action: 'signin' | 'signup') => {
+    if (action === 'signin') {
+      navigate('/login');
+    } else {
+      navigate('/signup');
+    }
+  };
+
   return (
     <div className="min-h-screen">
-      <Header onAuthAction={onAuthAction} />
-      <HeroSection onAuthAction={onAuthAction} />
+      <HeroSection onAuthAction={handleAuthAction} />
       <AboutSection />
       <ServicesSection />
       <TestimonialsSection />
       <ContactSection />
-      <Footer />
     </div>
   );
 };
