@@ -1,6 +1,5 @@
 import axios from "axios"
-import * as Config from "../../../Utils/config";
-import { base64ToBlob } from "../../../Utils/CommonFunctions";
+import * as Config from "../../../Utils/config"; 
 
 export const UserLogin = async (data: any) => {
     try {

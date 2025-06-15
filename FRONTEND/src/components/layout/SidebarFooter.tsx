@@ -22,14 +22,14 @@ const SidebarFooter: React.FC<SidebarFooterProps> = ({
   if (collapsed) {
     return (
       <div className="px-2 py-4">
-        <button
+        {/* <button
           onClick={onCreateSignature}
           className="w-full bg-[#01C8A9] hover:bg-[#01a78f] text-white rounded-md flex items-center justify-center p-2 transition-all duration-300 hover:shadow-lg relative overflow-hidden group"
           title="Create Signature"
         >
           <span className="text-lg relative z-10">+</span>
           <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 group-hover:translate-x-full transition-all duration-700 ease-in-out" />
-        </button>
+        </button> */}
       </div>
     );
   }
@@ -98,7 +98,7 @@ const SidebarFooter: React.FC<SidebarFooterProps> = ({
           <span>View Examples</span>
         </div>
       </div> */}
-      <button
+      {/* <button
         onClick={handleLogout}
         className={cn(
           "w-full bg-[#ff8989] hover:bg-[#dd7474] text-white text-base font-medium py-2 px-2 rounded-md flex items-center justify-center gap-2 transition-all duration-300 hover:shadow-lg relative z-10 overflow-hidden group",
@@ -109,7 +109,7 @@ const SidebarFooter: React.FC<SidebarFooterProps> = ({
           <LogOut  /> Log Out
         </span>
         <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 group-hover:translate-x-full transition-all duration-700 ease-in-out" />
-      </button>
+      </button> */}
 
     </div>
   );

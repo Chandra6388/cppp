@@ -1,101 +1,70 @@
-
-import { Home, Search, User, PlusCircle, FileText } from "lucide-react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import {
+  Home,
+  FileSignature,
+  HelpCircle,
+  UserCircle,
+  TicketCheck,
+  RadioTower,
+  NotebookPen,
+  Bell,
+} from "lucide-react";
 
-interface MobileNavbarProps {
-  onCreateClick?: () => void;
-}
-
-const MobileNavbar: React.FC<MobileNavbarProps> = ({ onCreateClick }) => {
+const MobileNavbar = () => {
   const location = useLocation();
-  const navigate = useNavigate();
-  
-  const handleCreateClick = () => {
-    navigate('/create-signature');
+  const UserDetails = JSON.parse(localStorage.getItem("user"));
+  const Role = UserDetails?.Role;
+
+  const menuItemsByRole = {
+    ADMIN: [
+      { path: "/admin/dashboard", label: "Home", icon: Home },
+      { path: "/admin/support-tickets", label: "Support Tickets", icon: TicketCheck },
+      { path: "/admin/broadcast", label: "Broadcast", icon: RadioTower },
+      { path: "/admin/all-blog", label: "All Blog", icon: NotebookPen },
+    ],
+    EMPLOYEE: [
+      { path: "/employee/dashboard", label: "Home", icon: Home },
+      { path: "/employee/tickets", label: "Tickets", icon: TicketCheck, showUnread: true },
+      { path: "/employee/notifications", label: "Notifications", icon: Bell },
+    ],
+    USER: [
+      { path: "/user/dashboard", label: "Home", icon: Home },
+      { path: "/user/signatures", label: "My Signatures", icon: FileSignature },
+      { path: "/user/support", label: "Support & Help", icon: HelpCircle },
+      { path: "/user/account", label: "My Account", icon: UserCircle },
+    ],
   };
-  
-  const navItems = [
-    {
-      icon: Home,
-      label: "Home",
-      path: "/",
-    },
-    {
-      icon: FileText,
-      label: "Signatures",
-      path: "/signatures",
-    },
-    {
-      icon: PlusCircle,
-      label: "Create",
-      path: "/create",
-      action: handleCreateClick,
-    },
-    {
-      icon: Search,
-      label: "Search",
-      path: "/search",
-    },
-    {
-      icon: User,
-      label: "Account",
-      path: "/account",
-    },
-  ];
 
-
-  const endpoint = window.location.hash.replace(/^#/, '').split('?')[0];
+  const menuItems = menuItemsByRole[Role] || [];
+  const endpoint = location.pathname;
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden">
-      <div className="grid grid-cols-5 gap-1 bg-gradient-to-t from-[#021a38] to-[#031123] border-t border-[#112F59] p-2">
-        {navItems.map((item) => {
+      <div className="flex bg-gradient-to-t from-[#021a38] to-[#031123] border-t border-[#112F59]">
+        {menuItems.map((item) => {
           const isActive = item.path === endpoint;
           return (
-            <div key={item.label} className="flex flex-col items-center">
-              {item.action ? (
-                <button
-                  className="w-full flex flex-col items-center pt-2 pb-1 px-1"
-                  onClick={item.action}
-                >
-                  <item.icon
-                    className={cn(
-                      "h-5 w-5 mb-1",
-                      isActive ? "text-[#01C8A9]" : "text-gray-400"
-                    )}
-                  />
-                  <span
-                    className={cn(
-                      "text-[10px]",
-                      isActive ? "text-[#01C8A9]" : "text-gray-400"
-                    )}
-                  >
-                    {item.label}
-                  </span>
-                </button>
-              ) : (
-                <Link
-                  to={item.path}
-                  className="w-full flex flex-col items-center pt-2 pb-1 px-1"
-                >
-                  <item.icon
-                    className={cn(
-                      "h-5 w-5 mb-1",
-                      isActive ? "text-[#01C8A9]" : "text-gray-400"
-                    )}
-                  />
-                  <span
-                    className={cn(
-                      "text-[10px]",
-                      isActive ? "text-[#01C8A9]" : "text-gray-400"
-                    )}
-                  >
-                    {item.label}
-                  </span>
-                </Link>
-              )}
-            </div>
+            <Link
+              key={item.label}
+              to={item.path}
+              className="flex-1 flex flex-col items-center py-2"
+            >
+              <item.icon
+                className={cn(
+                  "h-5 w-5 mb-1",
+                  isActive ? "text-[#01C8A9]" : "text-gray-400"
+                )}
+              />
+              <span
+                className={cn(
+                  "text-[10px]",
+                  isActive ? "text-[#01C8A9]" : "text-gray-400"
+                )}
+              >
+                {item.label}
+              </span>
+            </Link>
           );
         })}
       </div>

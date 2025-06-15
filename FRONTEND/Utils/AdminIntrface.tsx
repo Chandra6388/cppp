@@ -9,9 +9,6 @@ export interface TimeFilterOption {
     value: string;
 }
 
-
-
-
 export interface UserData {
     total_user: number;
     total_active_user: number;
@@ -26,7 +23,9 @@ export interface PercentageChange {
 
 export interface User {
     _id: string,
-    Username: string;
+    Username?: string;
+    FirstName?: string;
+    LastName?:string;
     Email: string;
     PhoneNo: string;
     country?: string;
@@ -50,6 +49,8 @@ export interface EmployeeArr {
 export interface Employee {
     _id: string;
     Username: string;
+    LastName:string;
+    FirstName:string;
 }
 export interface userGraphData {
     name: string;

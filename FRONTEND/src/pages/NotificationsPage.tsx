@@ -12,12 +12,12 @@ import { useToast } from "@/hooks/use-toast";
 import CreateSignatureModal from "@/components/modals/CreateSignatureModal";
 import socket from "@/socket";
 import { formatNotificationTime } from "../../Utils/CommonFunctions";
-import {  useAppSelector} from "@/rediuxStore/store/hooks";
+import { useAppSelector } from "@/rediuxStore/store/hooks";
 
 
 const NotificationsPage = () => {
   const selectedUser = useAppSelector((state) => state.user);
-  const isMobile = useIsMobile(); 
+  const isMobile = useIsMobile();
   const { toast } = useToast();
   const userDetails = JSON.parse(localStorage.getItem("user") || "{}");
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -28,11 +28,11 @@ const NotificationsPage = () => {
   const handleSidebarCollapseChange = (collapsed: boolean) => {
     setSidebarCollapsed(collapsed);
   };
- 
 
-  useEffect(()=>{
+
+  useEffect(() => {
     setNotifications(selectedUser?.getallnotification || []);
-  },[selectedUser?.getallnotification]); 
+  }, [selectedUser?.getallnotification]);
 
   const handleMenuClick = () => {
     setSidebarOpen(true);
@@ -116,19 +116,14 @@ const NotificationsPage = () => {
           onCollapseChange={handleSidebarCollapseChange}
         />
 
-        <div
-          className="flex flex-col flex-1 transition-all duration-300 ease-in-out"
+        <div className="flex flex-col flex-1 transition-all duration-300 ease-in-out"
           style={{
             width: "100%",
             marginLeft: isMobile ? 0 : sidebarCollapsed ? '70px' : '250px',
             paddingBottom: isMobile ? '80px' : '0'
           }}
         >
-          <Header
-            onMenuClick={handleMenuClick}
-
-          />
-
+          <Header onMenuClick={handleMenuClick} />
           <div className="flex flex-col p-4 sm:p-6 w-full">
             <div className="flex justify-between items-center mb-6">
               <div>
@@ -197,8 +192,6 @@ const NotificationsPage = () => {
             </div>
           </div>
         </div>
-
-        {/* Mobile Navigation Bar */}
         {isMobile && (
           <MobileNavbar onCreateClick={handleCreateSignature} />
         )}

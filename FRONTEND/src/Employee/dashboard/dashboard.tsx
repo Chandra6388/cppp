@@ -5,7 +5,7 @@ import MainSidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
 import { useIsMobile } from "@/hooks/use-mobile";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
-import EnhancedStatisticsGrid from "@/components/dashboard/EnhancedStatisticsGrid"; 
+import EnhancedStatisticsGrid from "@/components/dashboard/EnhancedStatisticsGrid";
 import { getDashboardData } from '@/service/employee/dashbaordService'
 import { Badge } from "@/components/ui/badge";
 import { ConvertDate } from '../../../Utils/CommonFunctions'
@@ -20,6 +20,8 @@ const Dashboard = () => {
   const [selectedYear, setSelectedYear] = React.useState(new Date().getFullYear().toString());
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
   const [dashboardData, setDashboardData] = useState<EmployeeDashboard>({
     totalAssignedTickets: 0,
     totalResolvedTickets: 0,
@@ -83,7 +85,7 @@ const Dashboard = () => {
     getUsers()
   }
 
- 
+
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -132,15 +134,11 @@ const Dashboard = () => {
   return (
     <SidebarProvider defaultOpen={!isMobile}>
       <div className="flex w-full min-h-screen bg-gradient-to-br from-[#001430] to-[#031a3d] font-sans">
-        <MainSidebar open={sidebarOpen} onOpenChange={setSidebarOpen} />
+      <MainSidebar open={sidebarOpen} onOpenChange={setSidebarOpen} onCollapseChange={setSidebarCollapsed} />
         <div
           className="flex flex-col flex-1 transition-all duration-300 ease-in-out"
-          style={{
-            width: "100%",
-            marginLeft: isMobile ? 0 : '250px',
-            paddingBottom: isMobile ? '80px' : '0'
-          }}
-        >
+          style={{ width: "100%", marginLeft: isMobile ? 0 : sidebarCollapsed ? '70px' : '250px' }} >
+        
           <Header onMenuClick={handleMenuClick} />
 
           <div className="p-6">
@@ -159,65 +157,67 @@ const Dashboard = () => {
               <EnhancedStatisticsGrid statsData={statsData} />
             </div>
 
-            <div className="mt-6">
-              <div className="bg-[#031123] border border-[#112F59] rounded-lg p-6">
-                <h2 className="text-xl font-semibold text-white mb-4">Tickets</h2>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="border-b border-[#112F59]">
-                      <tr>
-                        <th className="py-3 px-4 text-left text-white">Subject</th>
-                        <th className="py-3 px-4 text-center text-white">Message</th>
-                        <th className="py-3 px-4 text-center text-white">Category</th>
-                        <th className="py-3 px-4 text-center text-white">Priority</th>
-                        <th className="py-3 px-4 text-center text-white">Status</th>
-                        <th className="py-3 px-4 text-center text-white">Create Date</th>
-                      </tr>
-                    </thead>
-                    <tbody>
+        
+
+
+            <div className="grid grid-cols-1 lg:grid-cols-1 gap-6 mt-6">
+              <div className="mt-6">
+                <div className="bg-[#031123] border border-[#112F59] rounded-lg p-6">
+                  <h2 className="text-xl font-semibold text-white mb-4">Signature Usage Analytics</h2>
+                  <div className="w-full overflow-x-auto">
+                    <table className="min-w-[900px] w-full table-auto border-collapse">
+                      <thead className="border-b border-[#112F59]">
+                        <tr>
+                          <th className="py-3 px-4 text-left text-white whitespace-nowrap">Signature Name</th>
+                          <th className="py-3 px-4 text-center text-white whitespace-nowrap">Usage Count</th>
+                          <th className="py-3 px-4 text-center text-white whitespace-nowrap">Total Views</th>
+                          <th className="py-3 px-4 text-center text-white whitespace-nowrap">Total Clicks</th>
+                          <th className="py-3 px-4 text-center text-white whitespace-nowrap">Social Clicks</th>
+                          <th className="py-3 px-4 text-center text-white whitespace-nowrap">Button Clicks</th>
+                          <th className="py-3 px-4 text-center text-white whitespace-nowrap">Last Used</th>
+                        </tr>
+                      </thead>
+                      <tbody>
                       {dashboardData.data.map((item, index) => (
-                        <tr key={index} className="border-b border-[#112F59] hover:bg-[#051b37]">
-                          <td className="py-4 px-4 text-white flex items-center" title={item?.subject}>
-                            {item?.subject?.length > 20 ? `${item.subject.slice(0, 20)}...` : item.subject}
-                          </td>
-                          <td className="py-4 px-4 text-center text-white">
-                            {item?.message?.length > 20 ? `${item.message.slice(0, 20)}...` : item.message}
-                          </td>
-                          <td className="py-4 px-4 text-center text-white">
-                            <Badge className={getCategoryColor(item?.category)}>
+                          <tr key={item._id} className="border-b border-[#112F59] hover:bg-[#051b37]">
+                            <td className="py-4 px-4 text-white whitespace-nowrap" title={item?.subject}>{item?.subject?.length > 20 ? `${item.subject.slice(0, 20)}...` : item.subject}</td>
+                            <td className="py-4 px-4 text-center text-white"> {item?.message?.length > 20 ? `${item.message.slice(0, 20)}...` : item.message}</td>
+                            <td className="py-4 px-4 text-center text-[#01C8A9]"><Badge className={getCategoryColor(item?.category)}>
                               {item?.category
                                 ?.replace('-', ' ')
                                 .split(' ')
                                 .map(word => word.charAt(0).toUpperCase() + word.slice(1))
                                 .join(' ')
                               }
-                            </Badge>
-                          </td>
-                          <td className="py-4 px-4 text-center text-white">
-                            <Badge className={getPriorityColor(item?.priority)}>
+                            </Badge></td>
+                            <td className="py-4 px-4 text-center text-white"><Badge className={getPriorityColor(item?.priority)}>
                               {item?.priority
                                 ? item.priority.charAt(0).toUpperCase() + item.priority.slice(1) + " Priority"
                                 : ""}
-                            </Badge>
-
-                          </td>
-                          
-                          <td className="py-4 px-4 text-center text-white">
-                            {<Badge className={getStatusColor(item?.status)}>
+                            </Badge></td>
+                            <td className="py-4 px-4 text-center text-gray-400"> {<Badge className={getStatusColor(item?.status)}>
                               {item?.status?.replace('-', ' ').split(' ').map(word => word?.charAt(0)?.toUpperCase() + word?.slice(1)).join(' ')}
-                            </Badge>}
-                          </td>
-                          <td className="py-4 px-4 text-center text-white">{ConvertDate(item?.createdAt)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                            </Badge>}</td>
+                            <td className="py-4 px-4 text-center text-gray-400">{ConvertDate(item?.createdAt)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             </div>
+
+
+
+
+
+
+
+
           </div>
         </div>
-      </div> 
+      </div>
     </SidebarProvider>
   );
 };

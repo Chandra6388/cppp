@@ -17,12 +17,12 @@ export const Faq = [
         answer: 'To add your signature to Gmail, click the "Copy HTML" button on your signature, then go to Gmail Settings > Signatures, and paste the copied signature using Ctrl+V or Cmd+V.',
         isOpen: false,
     },
-    {
-        id: '4',
-        question: 'Do you offer premium templates?',
-        answer: 'Yes, premium subscribers get access to our full library of professional templates, advanced analytics, and priority support.',
-        isOpen: false,
-    },
+    // {
+    //     id: '4',
+    //     question: 'Do you offer premium templates?',
+    //     answer: 'Yes, premium subscribers get access to our full library of professional templates, advanced analytics, and priority support.',
+    //     isOpen: false,
+    // },
     {
         id: '5',
         question: 'How do I track clicks on my signature?',

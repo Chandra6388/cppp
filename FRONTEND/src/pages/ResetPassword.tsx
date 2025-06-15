@@ -1,194 +1,187 @@
-
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import * as z from "zod";
-import { LogIn, Loader2, Lock } from "lucide-react";
-import { resetPassword } from '@/service/auth/auth.service'
+import { Label } from "@/components/ui/label";
+import { Link, useNavigate } from "react-router-dom";
+import { sweetAlert } from "../../Utils/CommonFunctions";
+import { resetPassword } from "@/service/auth/auth.service";
+import { Errors } from "../../Utils/UserInterface";
+import { Shield, Lock, ArrowLeft, CheckCircle } from "lucide-react";
 
-// Define form schema
-const loginFormSchema = z.object({
-    newPassword: z.string().min(6, { message: "Password must we at leat 6 digit" }),
-    confirmPassword: z.string().min(6, { message: "Password must we at leat 6 digit" }),
-});
+const ResetPassword = () => {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({ newPassword: "", confirmPassword: "" });
+  const [error, setError] = useState<Errors>({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    validate(name, value);
+  };
+
+  const validate = (name: string, value: string) => {
+    const updatedErrors = { ...error };
+    if (!value) {
+      updatedErrors[name] = `${name === "newPassword" ? "New password" : "Confirm password"} is required.`;
+    } else if (name === "newPassword" && value.length < 6) {
+      updatedErrors[name] = "Password must be at least 6 characters.";
+    } else {
+      delete updatedErrors[name];
+    }
+    setError(updatedErrors);
+  };
+
+  const onSubmit = async () => {
+    const { newPassword, confirmPassword } = formData;
 
 
-type LoginFormValues = z.infer<typeof loginFormSchema>;
+    console.log("formData", formData)
 
-const LoginPage = () => {
-    const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();
-    const { toast } = useToast();
-    const token = JSON.parse(localStorage.getItem("ResetPasswordtoken") || "null");
+    if (!newPassword || !confirmPassword) {
+      setError({
+        newPassword: !newPassword ? "New password is required." : "",
+        confirmPassword: !confirmPassword ? "Confirm password is required." : "",
+      });
+      return;
+    }
 
+    if (newPassword.length < 6) {
+      setError({ newPassword: "Password must be at least 6 characters." });
+      return;
+    }
 
-    const form = useForm<LoginFormValues>({
-        resolver: zodResolver(loginFormSchema),
-        defaultValues: {
-            confirmPassword: "",
-            newPassword: "",
-        },
-    });
+    if (newPassword !== confirmPassword) {
+      setError({ confirmPassword: "Passwords do not match." });
+      return;
+    }
 
-    const onSubmit = async (data: LoginFormValues) => {
-        setLoading(true);
-        const req = { newPassword: data.confirmPassword, token: token };
-        if (data.confirmPassword !== data.newPassword) {
-            toast({
-                title: 'Error',
-                description: 'New Password and Confirm Password must be the same',
-                variant: "warning",
-                duration: 1000,
-            });
-            setLoading(false);
-            return;
-        }
+    setIsLoading(true);
+    try {
+      const token = JSON.parse(localStorage.getItem("ResetPasswordtoken"));
+      const res = await resetPassword({ newPassword: newPassword, token: token });
+      sweetAlert(
+        res?.status ? "Success" : "Error",
+        res?.status
+          ? "Your password has been successfully reset."
+          : "Failed to reset password. Please try again.",
+        res?.status ? "success" : "error"
+      );
 
-        try {
-            const res = await resetPassword(req);
-            toast({
-                title: res?.status ? 'success' : "error",
-                description: res?.status ?
-                    'Password reset successfully' :
-                    'Failed to reset password. Please try again.',
-                variant: res?.status ? "success" : "destructive",
-                duration: 1000,
-            });
-            if (res?.status) {
-                setLoading(false);
-                navigate('/login')
-            } else {
-                setLoading(false);
-            }
+      if (res?.status) {
+        localStorage.removeItem("ResetPasswordtoken");
+        setSuccess(true);
+        setTimeout(() => navigate("/login"), 3000);
+      }
+    } catch (err) {
+      console.error(err);
+      sweetAlert("Oops!", "Something went wrong. Please try again later.", "error");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-        } catch (err) {
-            console.log("Error in Reset Password API", err);
-            toast({
-                title: 'Error',
-                description: 'An unexpected error occurred. Please try again.',
-                variant: "destructive",
-                duration: 1000,
-            });
-        }
-    };
-
-    return (
-        <div className="flex min-h-screen bg-[#001430] font-sans overflow-hidden">
-            <div className="flex flex-col md:flex-row w-full">
-                {/* Left panel - Login Form */}
-                <motion.div
-                    className="w-full md:w-1/2 p-8 flex flex-col justify-center items-center"
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.5 }}
-                >
-                    <div className="w-full max-w-md space-y-8">
-                        <div className="text-center mb-10">
-                            <img
-                                src="/lovable-uploads/8618aaab-fb95-49b4-83c0-5a18aef975ae.png"
-                                alt="ProSignature Logo"
-                                className="h-10 mx-auto mb-6 animate-logo-reveal"
-                            />
-                            <h1 className="text-3xl font-bold text-white tracking-tight">Reset Password</h1>
-                            <p className="text-[#8A99B4] mt-2">Almost there! Create a new password to access your account.</p>
-                        </div>
-
-                        <Form {...form}>
-                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                                <FormField
-                                    control={form.control}
-                                    name="newPassword"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel className="text-white">New Password</FormLabel>
-                                            <FormControl>
-                                                <div className="relative">
-                                                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#8A99B4] h-5 w-5" />
-                                                    <Input
-                                                        type="password"
-                                                        placeholder="Enter new password"
-                                                        className="bg-[#031123] border-[#112F59] text-white pl-10"
-                                                        {...field}
-                                                    />
-                                                </div>
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <FormField
-                                    control={form.control}
-                                    name="confirmPassword"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel className="text-white">Confirm Password</FormLabel>
-                                            <FormControl>
-                                                <div className="relative">
-                                                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#8A99B4] h-5 w-5" />
-                                                    <Input
-                                                        type="password"
-                                                        placeholder="Enter confirm password"
-                                                        className="bg-[#031123] border-[#112F59] text-white pl-10"
-                                                        {...field}
-                                                    />
-                                                </div>
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <Button
-                                    type="submit"
-                                    variant="teal"
-                                    className="w-full"
-                                    disabled={loading}
-                                >
-                                    {loading ? (
-                                        <>
-                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                            Submitting request...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <LogIn className="mr-2 h-4 w-4" />
-                                            Reset Password
-                                        </>
-                                    )}
-                                </Button>
-                            </form>
-                        </Form>
-                    </div>
-                </motion.div>
-                <motion.div
-                    className="hidden md:flex md:w-1/2 bg-[#031123] p-8 items-center justify-center"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.8, delay: 0.3 }}
-                >
-                    <div className="max-w-lg">
-                        <img
-                            src="/lovable-uploads/9e8729bb-ef12-4190-9169-b8a5c55be57c.png"
-                            alt="Email signature example"
-                            className="rounded-lg shadow-2xl animate-image-reveal"
-                        />
-                        <div className="mt-8 text-center">
-                            <h2 className="text-2xl font-bold text-white">Professional Email Signatures</h2>
-                            <p className="mt-2 text-[#8A99B4] max-w-md mx-auto">
-                                Create stunning email signatures to make a lasting impression with your clients and contacts.
-                            </p>
-                        </div>
-                    </div>
-                </motion.div>
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-black to-gray-900 p-4">
+      <div className="w-full max-w-4xl bg-black/20 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl overflow-hidden">
+        <div className="flex flex-col md:flex-row min-h-[600px]">
+          {/* Left Panel */}
+          <div className="hidden md:flex md:w-2/5 flex-col justify-center px-10 py-8 bg-gradient-to-br from-purple-800 to-indigo-900 text-white">
+            <div className="mb-4 inline-flex items-center px-4 py-2 bg-white/10 rounded-full backdrop-blur">
+              <Shield className="w-4 h-4 mr-2 text-purple-300" />
+              <span className="text-sm font-light">Secure Reset</span>
             </div>
+            <h2 className="text-3xl font-light">
+              Reset your password
+              <span className="block text-purple-300 font-normal text-2xl mt-1">quickly & securely</span>
+            </h2>
+            <p className="text-gray-300 text-sm font-light mt-4">
+              Create a new password to regain access to your account. Our secure system ensures your data is protected at every step.
+            </p>
+            <div className="mt-8 space-y-3">
+              <p className="flex items-center text-sm text-gray-300">
+                <span className="w-5 h-5 rounded-full bg-purple-500/20 flex items-center justify-center mr-3 text-purple-300 text-xs">1</span>
+                Enter new password
+              </p>
+              <p className="flex items-center text-sm text-gray-300">
+                <span className="w-5 h-5 rounded-full bg-purple-500/20 flex items-center justify-center mr-3 text-purple-300 text-xs">2</span>
+                Confirm and submit
+              </p>
+              <p className="flex items-center text-sm text-gray-300">
+                <span className="w-5 h-5 rounded-full bg-purple-500/20 flex items-center justify-center mr-3 text-purple-300 text-xs">3</span>
+                Login securely
+              </p>
+            </div>
+          </div>
+
+          {/* Right Panel */}
+          <div className="w-full md:w-3/5 flex items-center justify-center p-10 bg-black/80">
+            {!success ? (
+              <div className="w-full max-w-md">
+                <Link to="/login" className="flex items-center mb-6 text-sm text-gray-400 hover:text-purple-300">
+                  <ArrowLeft className="w-4 h-4 mr-2" /> Back to Sign In
+                </Link>
+                <h2 className="text-3xl font-light text-white mb-2 text-center">Reset Password</h2>
+                <p className="text-sm text-gray-400 mb-6 text-center">Enter and confirm your new password below.</p>
+
+                <div className="space-y-5">
+                  <div>
+                    <Label htmlFor="newPassword" className="text-gray-300 font-light">New Password</Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                      <Input
+                        name="newPassword"
+                        type="password"
+                        placeholder="Enter new password"
+                        value={formData.newPassword}
+                        onChange={handleChange}
+                        className="pl-12 bg-black/20 border-gray-600 text-white"
+                      />
+                      {error?.newPassword && <p className="text-red-500 text-sm mt-1">{error.newPassword}</p>}
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="confirmPassword" className="text-gray-300 font-light">Confirm Password</Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                      <Input
+                        name="confirmPassword"
+                        type="password"
+                        placeholder="Re-enter password"
+                        value={formData.confirmPassword}
+                        onChange={handleChange}
+                        className="pl-12 bg-black/20 border-gray-600 text-white"
+                      />
+                      {error?.confirmPassword && <p className="text-red-500 text-sm mt-1">{error.confirmPassword}</p>}
+                    </div>
+                  </div>
+
+                  <Button
+                    onClick={onSubmit}
+                    disabled={isLoading}
+                    className="w-full bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white py-3 rounded-xl text-base"
+                  >
+                    {isLoading ? "Resetting..." : "Reset Password"}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center w-full max-w-md">
+                <div className="flex justify-center mb-6">
+                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-500/20 to-teal-500/20 flex items-center justify-center">
+                    <CheckCircle className="w-10 h-10 text-emerald-400 animate-pulse" />
+                  </div>
+                </div>
+                <h2 className="text-2xl font-light text-white mb-2">Password Reset Successful</h2>
+                <p className="text-gray-400 text-sm">Redirecting you to login page...</p>
+              </div>
+            )}
+          </div>
         </div>
-    );
+      </div>
+    </div>
+  );
 };
 
-export default LoginPage;
+export default ResetPassword;

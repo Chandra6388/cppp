@@ -230,7 +230,7 @@ const TicketsPage = () => {
 
   const getEmployName = (id: string) => {
     const employee = employees.find(emp => emp._id === id);
-    return employee ? `${employee.Username}` : "Unknown";
+    return employee ? `${employee.FirstName + " " + employee?.LastName}` : "Unknown";
   };
 
   return (
@@ -353,8 +353,7 @@ const TicketsPage = () => {
           </div>
         </div>
       </div>
-
-      {/* Create Ticket Modal */}
+ 
       <CreateTicketModal
         open={assigneToSupportModal}
         onOpenChange={seAssigneToSupportModal}

@@ -1,194 +1,249 @@
 
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/use-auth";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import * as z from "zod";
-import { LogIn, Mail, User, AlertCircle, Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { forgotPassword } from '@/service/auth/auth.service'
-
-// Define form schema
-const loginFormSchema = z.object({
-    email: z.string().email({ message: "Please enter a valid email address" }),
-    username: z.string().min(2, { message: "Username must be at least 2 characters" }),
-});
+import { Mail, ArrowRight, Sparkles, CheckCircle, ArrowLeft, Shield, Clock, RefreshCw } from "lucide-react";
+import { sweetAlert } from "../../Utils/CommonFunctions"
+import { Errors } from "../../Utils/UserInterface"
 
 
-type LoginFormValues = z.infer<typeof loginFormSchema>;
-
-const LoginPage = () => {
-    const [loading, setLoading] = useState(false);
+const ForgotPassword = () => {
     const navigate = useNavigate();
-    const { toast } = useToast();
+    const [email, setEmail] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
+    const [isEmailSent, setIsEmailSent] = useState(false);
+    const [error, setError] = useState<Errors>({})
 
-    // Form definition
-    const form = useForm<LoginFormValues>({
-        resolver: zodResolver(loginFormSchema),
-        defaultValues: {
-            email: "",
-            username: "",
-        },
-    });
 
-    const onSubmit = async (data: LoginFormValues) => {
-        const req = { Username: data.username, Email: data.email };
-        setLoading(true);
+    const onSubmit = async () => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!email?.trim()) {
+            setError({ email: "Email is required" });
+            return;
+        }
+        if (!emailRegex.test(email)) {
+            setError({ email: "Please enter a valid email address" });
+            return;
+        }
+
+        const req = { Email: email };
+        setIsLoading(true);
+
         try {
             const res = await forgotPassword(req);
-            toast({
-                title: res?.message || 'Action Completed',
-                description: res?.status ?
-                    'Reset Password Link sent to your email' :
-                    'Failed to send reset password link. Please try again.',
-                variant: res?.status ? "success" : "destructive",
-                duration: 1000,
-            });
-            if (res?.status) {
-                localStorage.setItem("ResetPasswordtoken", JSON.stringify(res?.token))
-                navigate('/login')
-                setLoading(false);
-            } else {
-                setLoading(false);
-            }
 
+            sweetAlert(
+                res?.status ? "Success" : "Error",
+                res.message,
+                res?.status ? "success" : "error"
+            );
+
+            if (res?.status) {
+                setIsEmailSent(true)
+                localStorage.setItem("ResetPasswordtoken", JSON.stringify(res?.token));
+            }
         } catch (err) {
-            setLoading(false);
-            console.log("Error in forgotPassword API", err);
-            toast({
-                title: 'Error',
-                description: 'An unexpected error occurred. Please try again.',
-                variant: "destructive",
-                duration: 1000,
-            });
+            console.error("Error in forgotPassword API", err);
+            sweetAlert("Oops!", "An unexpected error occurred. Please try again in a moment.", "error");
+        } finally {
+            setIsLoading(false);
         }
     };
 
+
+    const handleChangeInput = (e) => {
+        const { name, value } = e.target;
+        setEmail(value)
+        validate(name, value)
+    };
+
+    const validate = (name: string, value: string) => {
+        const newErrors = { ...error };
+        if (!value) {
+            newErrors[name] = `${name} is required`;
+        }
+        else {
+            delete newErrors[name];
+            setError((prevErrors) => {
+                const updatedErrors = { ...prevErrors };
+                delete updatedErrors[name];
+                return updatedErrors;
+            });
+        }
+        if (Object.keys(newErrors).length !== 0) {
+            setError((prevErrors) => ({
+                ...prevErrors,
+                ...newErrors,
+            }));
+        }
+        return Object.keys(newErrors).length === 0;
+    };
+
+
     return (
-        <div className="flex min-h-screen bg-[#001430] font-sans overflow-hidden">
-            <div className="flex flex-col md:flex-row w-full">
-                {/* Left panel - Login Form */}
-                <motion.div
-                    className="w-full md:w-1/2 p-8 flex flex-col justify-center items-center"
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.5 }}
-                >
-                    <div className="w-full max-w-md space-y-8">
-                        <div className="text-center mb-10">
-                            <img
-                                src="/lovable-uploads/8618aaab-fb95-49b4-83c0-5a18aef975ae.png"
-                                alt="ProSignature Logo"
-                                className="h-10 mx-auto mb-6 animate-logo-reveal"
-                            />
-                            <h1 className="text-3xl font-bold text-white tracking-tight">Welcome</h1>
-                            <p className="text-[#8A99B4] mt-2">Enter Username and Password for reset password</p>
-                        </div>
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-black to-gray-900 p-4">
+            <div className="w-full max-w-4xl bg-black/20 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl overflow-hidden">
+                <div className="flex min-h-[600px]">
+                    <div className="hidden md:flex md:w-2/5 relative bg-gradient-to-br from-purple-900/50 via-indigo-900/50 to-blue-900/50">
+                        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-indigo-500/20"></div>
+                        <div className="absolute top-16 left-16 w-24 h-24 bg-gradient-to-br from-purple-500/30 to-indigo-500/30 rounded-full blur-xl animate-float"></div>
+                        <div className="absolute bottom-16 right-16 w-20 h-20 bg-gradient-to-br from-cyan-500/30 to-blue-500/30 rounded-full blur-xl animate-float" style={{ animationDelay: '2s' }}></div>
+                        <div className="relative z-10 flex flex-col justify-center p-8 text-white">
+                            <div className="inline-flex items-center px-3 py-2 rounded-full bg-white/10 backdrop-blur-sm mb-6 border border-purple-500/20 self-start">
+                                <Shield className="w-4 h-4 mr-2 text-purple-300" />
+                                <span className="text-sm font-light">Secure Recovery</span>
+                            </div>
 
-                        <Form {...form}>
-                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                                <FormField
-                                    control={form.control}
-                                    name="username"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel className="text-white">Username</FormLabel>
-                                            <FormControl>
-                                                <div className="relative">
-                                                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#8A99B4] h-5 w-5" />
-                                                    <Input
-                                                        placeholder="Enter your user name"
-                                                        className="bg-[#031123] border-[#112F59] text-white pl-10"
-                                                        {...field}
-                                                    />
-                                                </div>
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
+                            <h1 className="text-3xl font-light mb-4 leading-tight">
+                                Account recovery
+                                <span className="block text-purple-300 font-normal text-2xl mt-1">made simple</span>
+                                <span className="block text-2xl mt-1">and secure</span>
+                            </h1>
 
-                                <FormField
-                                    control={form.control}
-                                    name="email"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel className="text-white">Email</FormLabel>
-                                            <FormControl>
-                                                <div className="relative">
-                                                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#8A99B4] h-5 w-5" />
-                                                    <Input
-                                                        type="text"
-                                                        placeholder="Enter your Email"
-                                                        className="bg-[#031123] border-[#112F59] text-white pl-10"
-                                                        {...field}
-                                                    />
-                                                </div>
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-
-
-                                <Button
-                                    type="submit"
-                                    variant="teal"
-                                    className="w-full"
-                                    disabled={loading}
-                                >
-                                    {loading ? (
-                                        <>
-                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                            Submitting request...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <LogIn className="mr-2 h-4 w-4" />
-                                            Reset Password
-                                        </>
-                                    )}
-                                </Button>
-
-
-
-                            </form>
-                        </Form>
-
-
-                    </div>
-                </motion.div>
-
-                {/* Right panel - Promo Image, only shown on medium screens and above */}
-                <motion.div
-                    className="hidden md:flex md:w-1/2 bg-[#031123] p-8 items-center justify-center"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.8, delay: 0.3 }}
-                >
-                    <div className="max-w-lg">
-                        <img
-                            src="/lovable-uploads/9e8729bb-ef12-4190-9169-b8a5c55be57c.png"
-                            alt="Email signature example"
-                            className="rounded-lg shadow-2xl animate-image-reveal"
-                        />
-                        <div className="mt-8 text-center">
-                            <h2 className="text-2xl font-bold text-white">Professional Email Signatures</h2>
-                            <p className="mt-2 text-[#8A99B4] max-w-md mx-auto">
-                                Create stunning email signatures to make a lasting impression with your clients and contacts.
+                            <p className="text-gray-300 font-light mb-6 leading-relaxed text-sm">
+                                We understand that forgetting passwords happens. Our secure recovery process will have you back to creating professional signatures in no time.
                             </p>
+                            <div className="space-y-3 mb-6">
+                                <div className="flex items-center">
+                                    <div className="flex items-center justify-center w-6 h-6 rounded-full bg-purple-500/20 mr-3">
+                                        <span className="text-xs font-medium text-purple-300">1</span>
+                                    </div>
+                                    <span className="text-gray-300 text-sm">Enter your email address</span>
+                                </div>
+                                <div className="flex items-center">
+                                    <div className="flex items-center justify-center w-6 h-6 rounded-full bg-purple-500/20 mr-3">
+                                        <span className="text-xs font-medium text-purple-300">2</span>
+                                    </div>
+                                    <span className="text-gray-300 text-sm">Check your inbox for reset link</span>
+                                </div>
+                                <div className="flex items-center">
+                                    <div className="flex items-center justify-center w-6 h-6 rounded-full bg-purple-500/20 mr-3">
+                                        <span className="text-xs font-medium text-purple-300">3</span>
+                                    </div>
+                                    <span className="text-gray-300 text-sm">Create your new secure password</span>
+                                </div>
+                            </div>
+                            <div className="p-3 rounded-lg bg-white/5 backdrop-blur-sm border border-white/10">
+                                <div className="flex items-center mb-2">
+                                    <Shield className="w-4 h-4 text-emerald-400 mr-2" />
+                                    <span className="text-sm font-medium text-white">Security Features</span>
+                                </div>
+                                <div className="space-y-1 text-xs text-gray-300">
+                                    <div className="flex items-center">
+                                        <Clock className="w-3 h-3 mr-2 text-gray-400" />
+                                        <span>Reset links expire in 24 hours</span>
+                                    </div>
+                                    <div className="flex items-center">
+                                        <RefreshCw className="w-3 h-3 mr-2 text-gray-400" />
+                                        <span>One-time use for maximum security</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </motion.div>
+                    <div className="w-full md:w-3/5 flex items-center justify-center p-8">
+                        <div className="w-full max-w-md">
+                            <div className="mb-6">
+                                <Link
+                                    to="/login"
+                                    className="inline-flex items-center text-sm text-gray-400 hover:text-purple-300 transition-colors group"
+                                >
+                                    <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform duration-300" />
+                                    Back to Sign In
+                                </Link>
+                            </div>
+                            {!isEmailSent ? (
+                                <>
+                                    <div className="text-center mb-8">
+                                        <div className="inline-flex items-center px-6 py-3 rounded-full bg-gradient-to-r from-purple-500/20 to-indigo-500/20 backdrop-blur-xl border border-purple-500/20 mb-6 text-sm font-light text-purple-300">
+                                            <Sparkles className="w-4 h-4 mr-2 animate-pulse" />
+                                            Password Recovery
+                                        </div>
+                                        <h2 className="text-3xl font-light text-white mb-2">Forgot Password?</h2>
+                                        <p className="text-gray-400 font-light">No worries! Enter your email address and we'll send you a link to reset your password.</p>
+                                    </div>
+                                    <div className="space-y-6">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="email" className="text-gray-300 font-light">Email Address</Label>
+                                            <div className="relative">
+                                                <Mail className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                                                <Input
+                                                    name="email"
+                                                    type="email"
+                                                    placeholder="Enter your email address"
+                                                    value={email}
+                                                    onChange={handleChangeInput}
+                                                    className="pl-12 bg-black/20 border-gray-600 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400/20 transition-all duration-300 hover:bg-black/30 hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/20"
+                                                />
+                                                {error?.email && <p className="text-red-500 text-sm mt-2">{error?.email}</p>}
+                                            </div>
+                                        </div>
+                                        <Button
+                                            onClick={onSubmit}
+                                            disabled={isLoading}
+                                            className="w-full bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white font-light text-lg py-4 rounded-2xl group hover:scale-105 hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300 border-0"
+                                        >
+                                            {isLoading ? (
+                                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                                            ) : (
+                                                <>
+                                                    Send Reset Link
+                                                    <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
+                                                </>
+                                            )}
+                                        </Button>
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="text-center">
+                                        <div className="inline-flex items-center justify-center w-20 h-20 mb-8 rounded-full bg-gradient-to-br from-emerald-500/20 to-teal-500/20 backdrop-blur-sm border border-emerald-500/20">
+                                            <CheckCircle className="w-10 h-10 text-emerald-400 animate-pulse" />
+                                        </div>
+                                        <h2 className="text-3xl font-light text-white mb-4">Check Your Email</h2>
+                                        <p className="text-gray-400 font-light mb-8">
+                                            We've sent a password reset link to <span className="text-purple-300">{email}</span>.
+                                            Please check your inbox and follow the instructions to reset your password.
+                                        </p>
+                                        <div className="space-y-4">
+                                            <p className="text-sm text-gray-500 font-light">
+                                                Didn't receive the email? Check your spam folder or try again.
+                                            </p>
+                                            <Button
+                                                onClick={() => {
+                                                    setIsEmailSent(false);
+                                                    setEmail("");
+                                                }}
+                                                variant="outline"
+                                                className="w-full border-gray-600 text-gray-300 bg-transparent hover:bg-gradient-to-r hover:from-purple-500/20 hover:to-indigo-500/20 hover:border-purple-400/30 transition-all duration-300"
+                                            >
+                                                Try Different Email
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                            <div className="mt-8 text-center">
+                                <p className="text-gray-400 font-light">
+                                    Remember your password?{" "}
+                                    <Link
+                                        to="/login"
+                                        className="text-purple-300 hover:text-purple-200 transition-colors font-normal"
+                                    >
+                                        Sign in
+                                    </Link>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );
 };
 
-export default LoginPage;
+export default ForgotPassword;

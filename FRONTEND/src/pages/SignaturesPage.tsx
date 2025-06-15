@@ -145,6 +145,34 @@ const SignaturesPage = () => {
   const getSelectedsignatureHtml = signatures.filter(item => item._id === selectedSignatureId);
   const endpoint = window.location.hash.replace(/^#/, '').split('?')[0];
 
+
+  const onDownLoad = (id) => {
+    const signature = signatures.find(sig => sig._id === id);
+    if (!signature) return;
+  
+    const htmlContent = generateStandaloneSignatureHtml(signature);
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+  
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${signature.SignatureName || "signature"}.html`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  
+    URL.revokeObjectURL(url);
+  
+    toast({
+      title: "Signature downloaded",
+      description: "HTML file saved to your computer.",
+      variant: "success",
+      duration: 1500,
+    });
+  };
+  
+
+
   return (
     <>
       <SEO title={endpoint.split('/').pop()} description={"SignatureDashbaord"} />
@@ -157,22 +185,6 @@ const SignaturesPage = () => {
               <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
                 <h1 className="text-white text-2xl font-bold mb-6">My Signatures</h1>
                 <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 mb-6">
-                  <div className="flex flex-wrap gap-2 sm:gap-2">
-                    {filterButtons.map(button => (
-                      <button
-                        key={button.id}
-                        className={`px-6 py-2 rounded-full text-sm transition-all ${activeFilter === button.id
-                          ? 'bg-[#01C8A9] text-white'
-                          : 'bg-transparent text-white border border-[#112F59] hover:bg-[#051b37]'
-                          }`}
-                        onClick={() => setActiveFilter(button.id)}
-                      >
-                        {button.label}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Search Bar */}
                   <div className="w-full sm:w-auto sm:ml-auto">
                     <input
                       type="text"
@@ -182,9 +194,6 @@ const SignaturesPage = () => {
                       onChange={(e) => setSearchQuery(e.target.value)}
                     />
                   </div>
-
-                  {/* Add Button */}
-
                   <motion.div
                     variants={itemVariants}
                     className="w-full sm:w-auto mt-3 sm:mt-0"
@@ -211,12 +220,9 @@ const SignaturesPage = () => {
                       Add New Signature
                     </Button>
                   </motion.div>
-                  
                 </div>
-
               </motion.div>
-
-              {filteredSignatures.length === 0 ? (
+              {signatures.length === 0 ? (
                 <div className="w-[60%] mx-auto flex-grow min-h-[50vh] flex items-center justify-center" style={{ boxShadow: "rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;" }}>
                   <motion.div
                     className="flex flex-col items-center justify-center bg-[#092756] rounded-xl py-8 px-8 w-full max-w-xxl"
@@ -244,18 +250,44 @@ const SignaturesPage = () => {
                     </div>
                   </motion.div>
                 </div>
+              ) : filteredSignatures.length === 0 ? (
+                <div className="w-[60%] mx-auto flex-grow min-h-[50vh] flex items-center justify-center" style={{ boxShadow: "rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;" }}>
+                  <motion.div
+                    className="flex flex-col items-center justify-center bg-[#092756] rounded-xl py-8 px-8 w-full max-w-xxl"
+                    style={{ border: "1px solid rgb(49 65 86)" }}
+                    variants={itemVariants}
+                  >
+                    <div className="flex flex-col items-center text-center space-y-4">
+                      <img
+                        src="/lovable-uploads/no-sigature-img.png"
+                        alt="Email signature example"
+                        className="rounded-lg shadow-2xl animate-image-reveal w-[80px] h-[80px] sm:w-[100px] sm:h-[100px] md:w-[120px] md:h-[120px] object-contain"
+                      />
+                      <h2 className="text-white text-lg font-semibold">No matching signatures.</h2>
+                      <p className="text-sm text-gray-400">Try adjusting your search or filters.</p>
+                    </div>
+                  </motion.div>
+                </div>
               ) : (
-                <motion.div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4" initial="hidden" animate={animateCards ? "visible" : "hidden"}>
+                <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-6 mt-4">
                   {filteredSignatures.map(signature => (
-                    <motion.div key={signature._id} variants={itemVariants} whileHover={{ scale: 1.02, transition: { duration: 0.2 } }}>
-                      <SignatureCard signature={signature} onEdit={handleEdit} onShare={handleShare} onCopy={handleCopy} onDelete={confirmDelete} isDeleted={false } />
-                    </motion.div>
+                    <div key={signature._id}>
+                      <SignatureCard
+                        signature={signature}
+                        onEdit={handleEdit}
+                        onShare={handleShare}
+                        onCopy={handleCopy}
+                        onDelete={confirmDelete}
+                        isDeleted={false}
+                        onDownLoad={onDownLoad}
+                      />
+                    </div>
                   ))}
-                </motion.div>
+                </div>
               )}
             </div>
           </div>
-          {isMobile && <MobileNavbar onCreateClick={handleCreateSignature} />}
+          {isMobile && <MobileNavbar  />}
         </div>
         <DeleteConfirmDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen} onConfirm={handleDelete} />
         <ShareSignatureModal

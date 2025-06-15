@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import MainSidebar from "@/components/layout/Sidebar";
@@ -6,14 +5,14 @@ import Header from "@/components/layout/Header";
 import { useIsMobile } from "@/hooks/use-mobile";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import EnhancedStatisticsGrid from "@/components/dashboard/EnhancedStatisticsGrid";
-import TrendingSignaturePopup from "@/components/signature/TrendingSignaturePopup";
-import { getAllUser, updateUserStatus, deleteUserByAdmin, getAllEmployee, userCreateAnalytics,  } from '@/service/auth/auth.service'
+import { getAllUser, updateUserStatus, deleteUserByAdmin, getAllEmployee, userCreateAnalytics, } from '@/service/auth/auth.service'
 import { ConvertDate } from '../../../Utils/CommonFunctions'
 import { sweetAlert } from '../../../Utils/CommonFunctions'
 import { Trash2 } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { userGraphData, UsersArr, EmployeeArr, TimeFilterOption } from '../../../Utils/AdminIntrface'
 import EnhancedSignatureUseCard from "@/components/dashboard/EnhancedSignatureUseCard";
+import MobileNavbar from "@/components/layout/MobileNavbar";
 
 
 const Dashboard = () => {
@@ -24,6 +23,8 @@ const Dashboard = () => {
   const [selectedYear, setSelectedYear] = React.useState(new Date().getFullYear().toString());
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  
   const [userCreateGraphData, setUserCreateGraphData] = useState<userGraphData[]>([]);
   const [usersArr, setUserArr] = useState<UsersArr>({
     currectUserData: {
@@ -63,7 +64,7 @@ const Dashboard = () => {
   const handleMenuClick = () => {
     setSidebarOpen(true);
   };
- 
+
   useEffect(() => {
     getUsers()
     getEmployees()
@@ -235,15 +236,11 @@ const Dashboard = () => {
   return (
     <SidebarProvider defaultOpen={!isMobile}>
       <div className="flex w-full min-h-screen bg-gradient-to-br from-[#001430] to-[#031a3d] font-sans">
-        <MainSidebar open={sidebarOpen} onOpenChange={setSidebarOpen} />
+            <MainSidebar open={sidebarOpen} onOpenChange={setSidebarOpen} onCollapseChange={setSidebarCollapsed} />
         <div
           className="flex flex-col flex-1 transition-all duration-300 ease-in-out"
-          style={{
-            width: "100%",
-            marginLeft: isMobile ? 0 : '250px',
-            paddingBottom: isMobile ? '80px' : '0'
-          }}
-        >
+          style={{ width: "100%", marginLeft: isMobile ? 0 : sidebarCollapsed ? '70px' : '250px' }} >
+        
           <Header onMenuClick={handleMenuClick} />
           <div className="p-6">
             <DashboardHeader
@@ -275,34 +272,33 @@ const Dashboard = () => {
                 signatureSendHistoryGraphData={userCreateGraphData}
               />
             </div>
+            <div className="grid grid-cols-1 lg:grid-cols-1 gap-6 mt-6">
+              <div className="mt-6">
+                <div className="bg-[#031123] border border-[#112F59] rounded-lg p-6">
+                  <h2 className="text-xl font-semibold text-white mb-4">Users</h2>
+                  <div className="w-full overflow-x-auto">
+                    <table className="min-w-[900px] w-full table-auto border-collapse">
+                      <thead className="border-b border-[#112F59]">
+                        <tr>
+                          <th className="py-3 px-4 text-left text-white whitespace-nowrap">Full Name</th>
+                          <th className="py-3 px-4 text-center text-white whitespace-nowrap">Email</th>
+                          <th className="py-3 px-4 text-center text-white whitespace-nowrap">PhoneNo</th>
+                          <th className="py-3 px-4 text-center text-white whitespace-nowrap">country</th>
+                          <th className="py-3 px-4 text-center text-white whitespace-nowrap">Status</th>
+                          <th className="py-3 px-4 text-center text-white whitespace-nowrap">Action</th>
+                          <th className="py-3 px-4 text-center text-white whitespace-nowrap">Create Date</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {usersArr?.data?.map((item, index) => (
+                          <tr key={item._id} className="border-b border-[#112F59] hover:bg-[#051b37]">
+                            <td className="py-4 px-4 text-white whitespace-nowrap">{(item?.FirstName || "") + " " + (item?.LastName || "")}</td>
+                            <td className="py-4 px-4 text-center text-white">{item?.Email}</td>
+                            <td className="py-4 px-4 text-center text-[#01C8A9]">{item?.PhoneNo}</td>
+                            <td className="py-4 px-4 text-center text-white">{item?.country || "N/A"}</td>
+                            <td className="py-4 px-4 text-center text-gray-400">
+                              <div className="flex justify-center">
 
-            <div className="mt-6">
-              <div className="bg-[#031123] border border-[#112F59] rounded-lg p-6">
-                <h2 className="text-xl font-semibold text-white mb-4">Users</h2>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="border-b border-[#112F59]">
-                      <tr>
-                        <th className="py-3 px-4 text-left text-white">User Name</th>
-                        <th className="py-3 px-4 text-center text-white">Email</th>
-                        <th className="py-3 px-4 text-center text-white">PhoneNo</th>
-                        <th className="py-3 px-4 text-center text-white">country</th>
-                        <th className="py-3 px-4 text-center text-white">Status</th>
-                        <th className="py-3 px-4 text-center text-white">Action</th>
-                        <th className="py-3 px-4 text-center text-white">Create Date</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {usersArr?.data?.map((item, index) => (
-                        <tr key={index} className="border-b border-[#112F59] hover:bg-[#051b37]">
-                          <td className="py-4 px-4 text-white flex items-center">{item?.Username}</td>
-                          <td className="py-4 px-4 text-center text-white">{item?.Email}</td>
-                          <td className="py-4 px-4 text-center text-white">{item?.PhoneNo}</td>
-                          <td className="py-4 px-4 text-center text-white">{item?.country || "N/A"}</td>
-                          <td className="py-4 px-4 text-center text-white">
-                            <>
-                              <label className="inline-flex items-center cursor-pointer">
-                                <input type="checkbox" value="" className="sr-only peer" />
                                 <label className="relative inline-flex items-center cursor-pointer">
                                   <input
                                     type="checkbox"
@@ -313,53 +309,51 @@ const Dashboard = () => {
                                   <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-[#01c8a7] after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white  after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white">
                                   </div>
                                 </label>
-                              </label>
-                            </></td>
-                          <td className="py-4 px-4 text-white">
-                            {item?.Is_AdminDeleted ? <div className="flex justify-center items-center border border-red-700 bg-red-100 text-red-800 px-2 py-2 rounded">
+                              </div>
+                            </td>
+                            <td className="py-4 px-4 text-center text-gray-400">{item?.Is_AdminDeleted ? <div className="flex justify-center items-center border border-red-700 bg-red-100 text-red-800 px-2 py-2 rounded">
                               User is deleted
                             </div>
                               : <div className="flex justify-center items-center">
                                 <Trash2 onClick={() => handleDeleteUser(item?._id)} />
-                              </div>}
-                          </td>
-
-                          <td className="py-4 px-4 text-center text-white">{ConvertDate(item?.createdAt)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                              </div>}</td>
+                            <td className="py-4 px-4 text-center text-gray-400">{ConvertDate(item?.createdAt)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="mt-6">
-              <div className="bg-[#031123] border border-[#112F59] rounded-lg p-6">
-                <h2 className="text-xl font-semibold text-white mb-4">Employees</h2>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="border-b border-[#112F59]">
-                      <tr>
-                        <th className="py-3 px-4 text-left text-white">User Name</th>
-                        <th className="py-3 px-4 text-center text-white">Email</th>
-                        <th className="py-3 px-4 text-center text-white">PhoneNo</th>
-                        <th className="py-3 px-4 text-center text-white">country</th>
-                        <th className="py-3 px-4 text-center text-white">Status</th>
-                        <th className="py-3 px-4 text-center text-white">Action</th>
-                        <th className="py-3 px-4 text-center text-white">Create Date</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {employeeArr?.data?.map((item, index) => (
-                        <tr key={index} className="border-b border-[#112F59] hover:bg-[#051b37]">
-                          <td className="py-4 px-4 text-white flex items-center">{item?.Username}</td>
-                          <td className="py-4 px-4 text-center text-white">{item?.Email}</td>
-                          <td className="py-4 px-4 text-center text-white">{item?.PhoneNo}</td>
-                          <td className="py-4 px-4 text-center text-white">{item?.country || "N/A"}</td>
-                          <td className="py-4 px-4 text-center text-white">
-                            <>
-                              <label className="inline-flex items-center cursor-pointer">
-                                <input type="checkbox" value="" className="sr-only peer" />
+            <div className="grid grid-cols-1 lg:grid-cols-1 gap-6 mt-6">
+              <div className="mt-6">
+                <div className="bg-[#031123] border border-[#112F59] rounded-lg p-6">
+                  <h2 className="text-xl font-semibold text-white mb-4">Employees</h2>
+                  <div className="w-full overflow-x-auto">
+                    <table className="min-w-[900px] w-full table-auto border-collapse">
+                      <thead className="border-b border-[#112F59]">
+                        <tr>
+                          <th className="py-3 px-4 text-left text-white whitespace-nowrap">Full Name</th>
+                          <th className="py-3 px-4 text-center text-white whitespace-nowrap">Email</th>
+                          <th className="py-3 px-4 text-center text-white whitespace-nowrap">PhoneNo</th>
+                          <th className="py-3 px-4 text-center text-white whitespace-nowrap">country</th>
+                          <th className="py-3 px-4 text-center text-white whitespace-nowrap">Status</th>
+                          <th className="py-3 px-4 text-center text-white whitespace-nowrap">Action</th>
+                          <th className="py-3 px-4 text-center text-white whitespace-nowrap">Create Date</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {employeeArr?.data?.map((item, index) => (
+                          <tr key={item._id} className="border-b border-[#112F59] hover:bg-[#051b37]">
+                            <td className="py-4 px-4 text-white whitespace-nowrap">{(item?.FirstName || "") + " " + (item?.LastName || "")}</td>
+                            <td className="py-4 px-4 text-center text-white">{item?.Email}</td>
+                            <td className="py-4 px-4 text-center text-[#01C8A9]">{item?.PhoneNo}</td>
+                            <td className="py-4 px-4 text-center text-white">{item?.country || "N/A"}</td>
+                            <td className="py-4 px-4 text-center text-gray-400">
+                              <div className="flex justify-center">
+
                                 <label className="relative inline-flex items-center cursor-pointer">
                                   <input
                                     type="checkbox"
@@ -370,31 +364,29 @@ const Dashboard = () => {
                                   <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-[#01c8a7] after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white  after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white">
                                   </div>
                                 </label>
-                              </label>
-                            </></td>
-                          <td className="py-4 px-4 text-white">
-                            {item?.Is_AdminDeleted ? <div className="flex justify-center items-center border border-red-700 bg-red-100 text-red-800 px-2 py-2 rounded">
+                              </div>
+                            </td>
+                            <td className="py-4 px-4 text-center text-gray-400">{item?.Is_AdminDeleted ? <div className="flex justify-center items-center border border-red-700 bg-red-100 text-red-800 px-2 py-2 rounded">
                               User is deleted
                             </div>
                               : <div className="flex justify-center items-center">
                                 <Trash2 onClick={() => handleDeleteUser(item?._id)} />
-                              </div>}
-                          </td>
-
-                          <td className="py-4 px-4 text-center text-white">{ConvertDate(item?.createdAt)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                              </div>}</td>
+                            <td className="py-4 px-4 text-center text-gray-400">{ConvertDate(item?.createdAt)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+        {isMobile && (
+          <MobileNavbar  />
+        )}
       </div>
-
-      {/* Trending Signature Popup */}
-      {/* <TrendingSignaturePopup /> */}
     </SidebarProvider>
   );
 };

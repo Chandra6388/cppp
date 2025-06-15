@@ -1,6 +1,6 @@
 
-import React from "react";
-import { Trash2, Edit2, Share2, Copy, RotateCcw  } from "lucide-react";
+import React, { useState } from "react";
+import { Trash2, Edit2, Share2, Copy, RotateCcw, CheckCheck , Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { generateSignatureHtml } from "./SignatureUtils";
 import { useToast } from "@/hooks/use-toast";
@@ -18,7 +18,7 @@ interface SignatureCardProps {
     }
     createdAt: string;
     usageCount: number;
-   
+
     details?: {
       name: string;
       jobTitle: string;
@@ -44,13 +44,14 @@ interface SignatureCardProps {
   onCopy: (id: string) => void;
   onDelete: (id: string) => void;
   onRestore?: (id: string) => void;
+  onDownLoad?:(id:string)=>void;
 
-  isDeleted:boolean
+  isDeleted: boolean
 }
 
-const SignatureCard: React.FC<SignatureCardProps> = ({signature, onEdit, onShare, onCopy, onDelete, isDeleted, onRestore}) => {
+const SignatureCard: React.FC<SignatureCardProps> = ({ signature, onEdit, onShare, onCopy, onDelete, isDeleted, onRestore, onDownLoad }) => {
   const { toast } = useToast();
-
+  const [copy, setCopy] = useState("Copy")
   const renderSignaturePreview = () => {
 
     if (!signature.details) {
@@ -59,7 +60,7 @@ const SignatureCard: React.FC<SignatureCardProps> = ({signature, onEdit, onShare
     const signatureHtml = generateSignatureHtml(signature);
     return (
       <div
-        className="bg-white rounded-lg w-full h-full overflow-hidden"
+        className="bg-white w-full h-full overflow-hidden p-2"
         dangerouslySetInnerHTML={{ __html: signatureHtml }}
       />
     );
@@ -75,8 +76,11 @@ const SignatureCard: React.FC<SignatureCardProps> = ({signature, onEdit, onShare
         variant: "destructive",
         duration: 1000,
       });
+
       return;
     }
+
+
 
 
     try {
@@ -106,7 +110,7 @@ const SignatureCard: React.FC<SignatureCardProps> = ({signature, onEdit, onShare
       `;
       }
 
- 
+
       const iframe = document.createElement('iframe');
       iframe.style.position = 'fixed';
       iframe.style.top = '-9999px';
@@ -129,7 +133,13 @@ const SignatureCard: React.FC<SignatureCardProps> = ({signature, onEdit, onShare
         selection.addRange(range);
         const successful = doc.execCommand('copy');
 
+        setCopy("Copied");
+
+        setTimeout(() => {
+          setCopy("Copy");
+        }, 4000);
         if (successful) {
+
           toast({
             title: "Signature copied",
             description: "Your signature has been copied and is ready to paste into your email",
@@ -168,19 +178,21 @@ const SignatureCard: React.FC<SignatureCardProps> = ({signature, onEdit, onShare
 
 
   return (
-    <div className="bg-[#031123] border border-[#112F59] rounded-lg overflow-hidden hover:shadow-lg hover:shadow-[#01C8A9]/20 transition-all duration-300 hover:scale-[1.02] hover:border-[#01C8A9]/40">
-      <div className="p-4 border-b border-[#112F59]">
-        <h3 className="text-white font-medium truncate">{signature.SignatureName}</h3>
-        <div className="flex justify-between items-center mt-2">
-          <span className="text-gray-400 text-xs">Template: {signature?.templateInfo?.TemplatesName}</span>
-          <span className="text-gray-400 text-xs">Created: {ConvertDate(signature.createdAt)}</span>
-        </div>
-      </div>
-      <div className="p-4 h-50 overflow-hidden flex items-center justify-center">
+    <div className="bg-[#031123] border border-[#112F59] overflow-hidden hover:shadow-lg hover:shadow-[#01C8A9]/10 transition-all duration-300 hover:scale-[1.02] hover:border-[#01C8A9]/40">
+
+      <div className="h-50 overflow-hidden flex items-center justify-center responsvie">
         {renderSignaturePreview()}
       </div>
-      <div className="p-4 border-t border-[#112F59] flex justify-end items-center">
+      <div className="p-4 border-t border-[#112F59] flex justify-between items-center">
+        <div className=" border-[#112F59]">
+          <h3 className="text-white font-medium truncate">{signature.SignatureName}</h3>
+          <div className="flex justify-between items-center mt-2">
+            {/* <span className="text-gray-400 text-xs">Template: {signature?.templateInfo?.TemplatesName}</span> */}
+            <span className="text-gray-400 text-xs">Created: {ConvertDate(signature.createdAt)}</span>
+          </div>
+        </div>
         <div className="flex gap-2">
+
           {!isDeleted && <Button
             variant="ghost"
             size="sm"
@@ -190,7 +202,7 @@ const SignatureCard: React.FC<SignatureCardProps> = ({signature, onEdit, onShare
           >
             <Edit2 className="w-4 h-4" />
           </Button>}
-          { !isDeleted && <Button
+          {!isDeleted && <Button
             variant="ghost"
             size="sm"
             className="text-gray-400 hover:text-white hover:bg-[#07234A]"
@@ -199,25 +211,21 @@ const SignatureCard: React.FC<SignatureCardProps> = ({signature, onEdit, onShare
           >
             <Share2 className="w-4 h-4" />
           </Button>}
-          { !isDeleted && <Button
-            variant="teal"
-            size="sm"
-            onClick={handleCopyDirectly}
-            title="Copy to clipboard"
-            className="flex items-center gap-1"
-          >
-            <Copy className="w-3 h-3" />
-            <span className="text-xs">Copy</span>
-          </Button>}
-          {isDeleted && <Button
+
+
+          {!isDeleted && <Button
             variant="ghost"
             size="sm"
-            className="text-gray-400 hover:text-red-400 hover:bg-[#07234A]"
-            onClick={() => onRestore(signature._id)}
-            title="Restore"
+            className="text-gray-400 hover:text-white hover:bg-[#07234A]"
+            onClick={() => onDownLoad(signature._id)}
+            title="Share"
           >
-            <RotateCcw className="w-4 h-4" />
+            <Download  className="w-4 h-4" />
           </Button>}
+
+
+
+
           <Button
             variant="ghost"
             size="sm"
@@ -227,6 +235,34 @@ const SignatureCard: React.FC<SignatureCardProps> = ({signature, onEdit, onShare
           >
             <Trash2 className="w-4 h-4" />
           </Button>
+          {!isDeleted &&  (
+            <Button
+              variant={copy === "Copy" ? "teal" : "dark"}
+              size="sm"
+              onClick={handleCopyDirectly}
+              title="Copy to clipboard"
+              className="flex items-center gap-1"
+              disabled={copy != "Copy"}
+            >
+              {copy === "Copy" ? (
+                <Copy className="w-3 h-3" />
+              ) : (
+                <CheckCheck className="w-3 h-3" />
+              )}
+              <span className="text-xs">{copy}</span>
+            </Button>
+          )}
+
+          {isDeleted && <Button
+            variant="ghost"
+            size="sm"
+            className="text-gray-400 hover:text-red-400 hover:bg-[#07234A]"
+            onClick={() => onRestore(signature._id)}
+            title="Restore"
+          >
+            <RotateCcw className="w-4 h-4" />
+          </Button>}
+
         </div>
       </div>
     </div>

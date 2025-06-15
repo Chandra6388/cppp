@@ -470,7 +470,7 @@ const SupportPage = () => {
                       <a href="mailto:support@example.com" className="text-[#01C8A9] hover:underline text-lg">support@example.com</a>
                     </motion.div>
 
-                    <motion.div variants={itemVariants} className="bg-[#031123] border border-[#112F59] rounded-lg p-6 shadow-lg">
+                    {/* <motion.div variants={itemVariants} className="bg-[#031123] border border-[#112F59] rounded-lg p-6 shadow-lg">
                       <div className="flex items-center mb-4">
                         <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center mr-3">
                           <Phone className="text-purple-400 w-5 h-5" />
@@ -500,7 +500,7 @@ const SupportPage = () => {
                       >
                         Upgrade to Premium
                       </Button>
-                    </motion.div>
+                    </motion.div> */}
                   </div>
                 </motion.div>
               </TabsContent>
@@ -508,7 +508,7 @@ const SupportPage = () => {
           </div>
         </div>
 
-        {isMobile && <MobileNavbar onCreateClick={() => { }} />}
+        {isMobile && <MobileNavbar  />}
       </div>
     </SidebarProvider>
   );

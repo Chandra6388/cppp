@@ -1,4 +1,6 @@
 import Swal from 'sweetalert2';
+import React, { useCallback } from "react";
+import Cropper, { Area } from 'react-easy-crop';
 import { format, differenceInMinutes, differenceInHours, parseISO, isValid } from "date-fns";
 export const ConvertDate = (data: string) => {
   const date = new Date(data);
@@ -52,8 +54,7 @@ export const getFinalHtml = (htmlCode: string, background: string, signatureId: 
   return htmlCode;
 }
 
-
-//  confirmButtonColor: "#01c8a7",
+ 
 export const sweetAlert = (title: string, text: string, icon: any, timer?: number) => {
   return new Promise((resolve, reject) => {
     Swal.fire({
@@ -62,7 +63,7 @@ export const sweetAlert = (title: string, text: string, icon: any, timer?: numbe
       icon: icon,
       showConfirmButton: false,
       allowOutsideClick: false,
-      timer: timer || 2000,
+      timer: timer || 4000,
       timerProgressBar: true,
     }).then((result) => {
       if (result.isConfirmed) {
@@ -75,9 +76,7 @@ export const sweetAlert = (title: string, text: string, icon: any, timer?: numbe
     });
   });
 }
-
-
-// Format date to readable format
+ 
 export const formatDate = (dateString: string) => {
   const options: Intl.DateTimeFormatOptions = {
     year: 'numeric',
@@ -119,7 +118,7 @@ export const getPriorityColor = (priority: string) => {
 };
 
 
-export const formatNotificationTime=(isoString: string): string =>{
+export const formatNotificationTime = (isoString: string): string => {
   if (!isoString) return "";
 
   const date = parseISO(isoString);
@@ -154,3 +153,42 @@ export const base64ToBlob = (base64String: string) => {
 
   return new Blob([intArray], { type: mime });
 };
+ 
+
+export const getCroppedImg = (imageSrc: string, crop: Area): Promise<Blob> => {
+  return new Promise((resolve, reject) => {
+    const image = new window.Image();
+    image.src = imageSrc;
+    image.crossOrigin = 'anonymous';
+
+    image.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = crop.width;
+      canvas.height = crop.height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return reject('Canvas context not found');
+
+      ctx.drawImage(
+        image,
+        crop.x,
+        crop.y,
+        crop.width,
+        crop.height,
+        0,
+        0,
+        crop.width,
+        crop.height
+      );
+
+      canvas.toBlob((blob) => {
+        if (!blob) return reject('Canvas is empty');
+        resolve(blob); // ✅ This is what we upload
+      }, 'image/jpeg');
+    };
+
+    image.onerror = () => reject('Image load failed');
+  });
+};
+
+
+

@@ -199,6 +199,7 @@ const TicketsPage = () => {
     };
   }, []);
 
+  console.log("isMsdddobile",  useIsMobile())
   
 
   return (

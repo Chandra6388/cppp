@@ -337,12 +337,12 @@ const AuthDialog = ({
                 </div>
 
                 {mode === 'signin' && <div className="flex items-center justify-between">
-                  <div className="flex items-center">
+                  {/* <div className="flex items-center">
                     <input id="remember" type="checkbox" className="w-4 h-4 text-cyan-400 bg-black/20 border-gray-600 rounded focus:ring-cyan-400/20" />
                     <Label htmlFor="remember" className="ml-2 text-sm text-gray-400 font-light">
                       Remember me
                     </Label>
-                  </div>
+                  </div> */}
                   <button type="button" className="text-sm text-cyan-300 hover:text-cyan-200 transition-colors font-light">
                     Forgot password?
                   </button>

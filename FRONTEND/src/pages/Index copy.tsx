@@ -1,138 +1,20 @@
-
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, Suspense } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import MainSidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
 import { useIsMobile } from "@/hooks/use-mobile";
-import DashboardHeader from "@/components/dashboard/DashboardHeader";
+import MobileNavbar from "@/components/layout/MobileNavbar";
 import EnhancedStatisticsGrid from "@/components/dashboard/EnhancedStatisticsGrid";
-import EnhancedAudienceOverviewCard from "@/components/dashboard/EnhancedAudienceOverviewCard";
-import EnhancedButtonClickTrackingCard from "@/components/dashboard/EnhancedButtonClickTrackingCard";
+const EnhancedAudienceOverviewCard = React.lazy(() => import("@/components/dashboard/EnhancedAudienceOverviewCard"));
+const EnhancedButtonClickTrackingCard = React.lazy(() => import("@/components/dashboard/EnhancedButtonClickTrackingCard"));
 import EnhancedSignatureOverviewCard from "@/components/dashboard/EnhancedSignatureOverviewCard";
 import EnhancedSignatureUseCard from "@/components/dashboard/EnhancedSignatureUseCard";
-import SignatureGrid from "@/components/dashboard/SignatureGrid";
 import TrendingSignaturePopup from "@/components/signature/TrendingSignaturePopup";
-import {ConvertDate} from "../../Utils/CommonFunctions"
-import { dashboardSummary, btnClickedGraphData, audienceOverviewGraphData, signatureSendGraphData, sigantureUseAnalytics } from '@/service/User/signatureDashbaord'
+import DashboardHeader from "@/components/dashboard/DashboardHeader";
+import { ConvertDate } from "../../Utils/CommonFunctions";
+import { dashboardSummary, btnClickedGraphData, audienceOverviewGraphData, signatureCreatedAnalytics, sigantureUseAnalytics, viewOpratingSystem } from '@/service/User/signatureDashbaord';
 
-
-
-
-interface TimeFilterOption {
-  label: string;
-  value: string;
-}
-interface SignatureItem {
-  id: string;
-  title: string;
-  date: string;
-  status: "active" | "pending" | "expired";
-  details?: {
-    name: string;
-    jobTitle: string;
-    company: string;
-    email: string;
-    phone?: string;
-    website?: string;
-    layout: string;
-  };
-}
-interface UserData {
-  totalSignatures: number;
-  totalSignatureViews: number;
-  totalLinkClicks: number;
-  conversionRate: number,
-
-}
-
-
-interface UsersArr {
-  currectUserData: UserData;
-  percentage_change: PercentageChange;
-
-}
-
-interface PercentageChange {
-  totalSignatures: number;
-  totalSignatureViews: number;
-  totalLinkClicks: number;
-  conversionRate: number;
-
-}
-const dashboardSampleSignatures: SignatureItem[] = [
-  {
-    id: "sig-1",
-    title: "Business Signature",
-    date: "Jan 15, 2025",
-    status: "active",
-    details: {
-      name: "Renato Rodic",
-      jobTitle: "Mortgage Loan Officer",
-      company: "NEXA Mortgage",
-      email: "info@nexamortgage.com",
-      phone: "(480) 307-4107",
-      website: "https://renatarodic.com/",
-      layout: "standard"
-    }
-  },
-  {
-    id: "sig-2",
-    title: "Personal Signature",
-    date: "Jan 20, 2025",
-    status: "active",
-    details: {
-      name: "Renato Rodic",
-      jobTitle: "Mortgage Loan Officer",
-      company: "NEXA Mortgage",
-      email: "info@nexamortgage.com",
-      phone: "(480) 307-4107",
-      website: "https://renatarodic.com/",
-      layout: "modern"
-    }
-  },
-  {
-    id: "sig-3",
-    title: "Marketing Signature",
-    date: "Feb 5, 2025",
-    status: "pending",
-    details: {
-      name: "Renato Rodic",
-      jobTitle: "Mortgage Loan Officer",
-      company: "NEXA Mortgage",
-      email: "info@nexamortgage.com",
-      phone: "(480) 307-4107",
-      website: "https://renatarodic.com/",
-      layout: "compact"
-    }
-  },
-  {
-    id: "sig-4",
-    title: "Conference Signature",
-    date: "Feb 10, 2025",
-    status: "active",
-    details: {
-      name: "Renato Rodic",
-      jobTitle: "Mortgage Loan Officer",
-      company: "NEXA Mortgage",
-      email: "info@nexamortgage.com",
-      phone: "(480) 307-4107",
-      website: "https://renatarodic.com/",
-      layout: "standard"
-    }
-  },
-];
-
-interface Signature {
-  _id: string;
-  SignatureName: string;
-  usageCount: string,
-  buttonClicks: string,
-  socialClicks: string,
-  totalViews: string,
-  lastUsed:string
-}
-
-const timeFilterOptions: TimeFilterOption[] = [
+const timeFilterOptions = [
   { label: "Today", value: "today" },
   { label: "This Week", value: "this_week" },
   { label: "This Month", value: "this_month" },
@@ -141,46 +23,28 @@ const timeFilterOptions: TimeFilterOption[] = [
 
 const Index = () => {
   const isMobile = useIsMobile();
-  const [sidebarOpen, setSidebarOpen] = React.useState(false);
-  const [selectedTimeFilter, setSelectedTimeFilter] = React.useState("this_month");
-  const [selectedYear, setSelectedYear] = React.useState(new Date().getFullYear().toString());
-  const [startDate, setStartDate] = useState<Date | null>(null);
-  const [endDate, setEndDate] = useState<Date | null>(null);
-  const userData = JSON.parse(localStorage.getItem('user'))
-  const [btnClickDataArr, setBtnClickDataArr] = useState([])
-  const [audienceViewAndClickDraphData, setAudienceViewAndClickDraphData] = useState([])
-  const [signatureSendHistoryGraphData, setSignatureSendHistoryGraphData] = useState([])
-  const [signatures, setSignatures] = useState<Signature[]>([]);
-
-  const [signatureOverviewData, setSignatureOverviewData] = useState<UsersArr>({
-    currectUserData: {
-      totalSignatures: 0,
-      totalSignatureViews: 0,
-      totalLinkClicks: 0,
-      conversionRate: 0,
-    },
-    percentage_change: {
-      totalSignatures: 0,
-      totalSignatureViews: 0,
-      totalLinkClicks: 0,
-      conversionRate: 0,
-
-    },
-
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [selectedTimeFilter, setSelectedTimeFilter] = useState("this_month");
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+  const [userData, setUserData] = useState(null);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [btnClickDataArr, setBtnClickDataArr] = useState([]);
+  const [audienceViewAndClickDraphData, setAudienceViewAndClickDraphData] = useState([]);
+  const [signatureSendHistoryGraphData, setSignatureSendHistoryGraphData] = useState([]);
+  const [signatures, setSignatures] = useState([]);
+  const [operatingSystem, setoOperatingSystem] = useState([]);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [signatureOverviewData, setSignatureOverviewData] = useState({
+    currentUserData: { totalSignatures: 0, totalSignatureViews: 0, totalLinkClicks: 0, conversionRate: 0 },
+    percentage_change: { totalSignatures: 0, totalSignatureViews: 0, totalLinkClicks: 0, conversionRate: 0 },
   });
 
-  const handleMenuClick = () => {
-    setSidebarOpen(true);
-  };
-
-  const statsData = {
-    day: [
-      { title: "Total Signatures", value: signatureOverviewData?.currectUserData?.totalSignatures, change: signatureOverviewData?.percentage_change?.totalSignatures, isPositive: Number(signatureOverviewData?.percentage_change?.totalSignatures) >= 0 ? true : false },
-      { title: "Total Signature Views", value: signatureOverviewData?.currectUserData?.totalSignatureViews, change: signatureOverviewData?.percentage_change?.totalSignatureViews, isPositive: Number(signatureOverviewData?.percentage_change?.totalSignatureViews) >= 0 ? true : false },
-      { title: "Total Link Clicks", value: signatureOverviewData?.currectUserData?.totalLinkClicks, change: signatureOverviewData?.percentage_change?.totalLinkClicks, isPositive: Number(signatureOverviewData?.percentage_change?.totalLinkClicks) >= 0 ? true : false },
-      { title: "Conversion Rate", value: signatureOverviewData?.currectUserData?.conversionRate, change: signatureOverviewData?.percentage_change?.conversionRate, isPositive: Number(signatureOverviewData?.percentage_change?.conversionRate) >= 0 ? true : false },
-    ]
-  };
+  useEffect(() => {
+    const data = localStorage.getItem('user');
+    if (data) setUserData(JSON.parse(data));
+  }, []);
 
   const filterPayload = useMemo(() => ({
     userId: userData?._id,
@@ -188,143 +52,91 @@ const Index = () => {
     start_date: startDate,
     end_date: endDate
   }), [userData, selectedTimeFilter, startDate, endDate]);
-  
+
   useEffect(() => {
     if (!userData) return;
-    getDashboardSummary();
-    getBtnClickedGraphData();
-    getAudienceOverviewGraphData();
-    getSignatureSendGraphData();
-    getSignature();
+    fetchAllDashboardData();
   }, [filterPayload]);
 
-  
-  const getDashboardSummary = async () => {
-    const req = { userId: userData?._id, filter_type: selectedTimeFilter, start_date: startDate, end_date: endDate }
-    await dashboardSummary(req)
-      .then((res) => {
-        if (res?.status) {
-          setSignatureOverviewData({
-            currectUserData: res?.current,
-            percentage_change: res?.percentage_change,
+  const fetchAllDashboardData = async () => {
+    const req = filterPayload;
+    try {
+      const [summary, btnClicks, audienceData, signatureData, usageData, os] = await Promise.all([
+        dashboardSummary(req).catch(() => null),
+        btnClickedGraphData(req).catch(() => null),
+        audienceOverviewGraphData(req).catch(() => null),
+        signatureCreatedAnalytics(req).catch(() => null),
+        sigantureUseAnalytics(req).catch(() => null),
+        viewOpratingSystem(req).catch(() => null),
+      ]);
 
-          })
-        }
-        else {
-          setSignatureOverviewData({
-            currectUserData: {
-              totalSignatures: 0,
-              totalSignatureViews: 0,
-              totalLinkClicks: 0,
-              conversionRate: 0
-            },
-            percentage_change: {
-              totalSignatures: 0,
-              totalSignatureViews: 0,
-              totalLinkClicks: 0,
-              conversionRate: 0
-            },
+      if (summary?.status) setSignatureOverviewData({ currentUserData: summary.current, percentage_change: summary.percentage_change });
+      else setSignatureOverviewData({ currentUserData: { totalSignatures: 0, totalSignatureViews: 0, totalLinkClicks: 0, conversionRate: 0 }, percentage_change: { totalSignatures: 0, totalSignatureViews: 0, totalLinkClicks: 0, conversionRate: 0 } });
 
-          })
-        }
-      })
-      .catch((error) => {
-        console.log("error in fetching the user details", error)
-      })
-  }
+      if (btnClicks?.status) setBtnClickDataArr(btnClicks.data);
+      else setBtnClickDataArr([]);
 
-  const getBtnClickedGraphData = async () => {
-    const req = { userId: userData?._id, filter_type: selectedTimeFilter, start_date: startDate, end_date: endDate }
-    await btnClickedGraphData(req)
-      .then((res) => {
-        if (res?.status) {
-          setBtnClickDataArr(res?.data)
-        }
-        else {
-          setBtnClickDataArr([])
-        }
-      }).catch((error) => {
-        console.log("error in fetching btn click graph data", error)
-      })
+      if (audienceData?.status) setAudienceViewAndClickDraphData(audienceData.data);
+      else setAudienceViewAndClickDraphData([]);
 
-  }
+      if (signatureData?.status) setSignatureSendHistoryGraphData(signatureData.data);
+      else setSignatureSendHistoryGraphData([]);
 
-  const getAudienceOverviewGraphData = async () => {
-    const req = { userId: userData?._id, filter_type: selectedTimeFilter, start_date: startDate, end_date: endDate }
-    await audienceOverviewGraphData(req)
-      .then((res) => {
-        if (res?.status) {
-          setAudienceViewAndClickDraphData(res?.data || [])
-        }
-        else {
-          setAudienceViewAndClickDraphData([])
-        }
-      }).catch((error) => {
-        console.log("error in fetching btn click graph data", error)
-      })
+      if (usageData?.status) setSignatures(usageData.data);
+      else setSignatures([]);
 
-  }
+      if (os?.status) setoOperatingSystem(os.data);
+      else setoOperatingSystem([]);
 
-  const getSignatureSendGraphData = async () => {
-    const req = { userId: userData?._id, filter_type: selectedTimeFilter, start_date: startDate, end_date: endDate }
-    await signatureSendGraphData(req)
-      .then((res) => {
-        if (res?.status) {
-          setSignatureSendHistoryGraphData(res?.data)
-        }
-        else {
-          setSignatureSendHistoryGraphData([])
-        }
-      }).catch((error) => {
-        console.log("error in fetching btn click graph data", error)
-      })
+    } catch (err) {
+      console.error("Failed to fetch dashboard data", err);
+    }
+  };
 
-  }
-
-
-  const getSignature = async () => {
-    const req = { userId: userData?._id }
-    await sigantureUseAnalytics(req)
-      .then((res) => {
-        if (res?.status) {
-          setSignatures(res?.data)
-        }
-        else {
-          setSignatures([])
-        }
-      })
-      .catch((error) => {
-        console.log("Error in fetching the signature", error)
-      })
-  }
-
-  const handleDateRangeApply = (start: Date | null, end: Date | null) => {
+  const handleDateRangeApply = (start, end) => {
     setStartDate(start);
     setEndDate(end);
+  };
 
-  }
- 
+  const statsData = {
+    day: [
+      { title: "Total Signatures", value: signatureOverviewData?.currentUserData?.totalSignatures, change: signatureOverviewData?.percentage_change?.totalSignatures, isPositive: signatureOverviewData?.percentage_change?.totalSignatures >= 0 },
+      { title: "Total Signature Views", value: signatureOverviewData?.currentUserData?.totalSignatureViews, change: signatureOverviewData?.percentage_change?.totalSignatureViews, isPositive: signatureOverviewData?.percentage_change?.totalSignatureViews >= 0 },
+      { title: "Total Link Clicks", value: signatureOverviewData?.currentUserData?.totalLinkClicks, change: signatureOverviewData?.percentage_change?.totalLinkClicks, isPositive: signatureOverviewData?.percentage_change?.totalLinkClicks >= 0 },
+      { title: "Conversion Rate", value: signatureOverviewData?.currentUserData?.conversionRate, change: signatureOverviewData?.percentage_change?.conversionRate, isPositive: signatureOverviewData?.percentage_change?.conversionRate >= 0 },
+    ]
+  };
+
+  const handleMenuClick = () => setSidebarOpen(true);
+
+  const handleCreateSignature = () => {
+    setCreateModalOpen(true);
+  };
+  const handleSidebarCollapseChange = (collapsed: boolean) => {
+    setSidebarCollapsed(collapsed);
+  };
 
   return (
     <SidebarProvider defaultOpen={!isMobile}>
       <div className="flex w-full min-h-screen bg-gradient-to-br from-[#001430] to-[#031a3d] font-sans">
-        <MainSidebar open={sidebarOpen} onOpenChange={setSidebarOpen} />
+        <MainSidebar
+          open={sidebarOpen}
+          onOpenChange={setSidebarOpen}
+          onCreateSignature={handleCreateSignature}
+          onCollapseChange={handleSidebarCollapseChange}
+        />
         <div
           className="flex flex-col flex-1 transition-all duration-300 ease-in-out"
           style={{
             width: "100%",
-            marginLeft: isMobile ? 0 : '250px',
+            marginLeft: isMobile ? 0 : sidebarCollapsed ? '70px' : '250px',
             paddingBottom: isMobile ? '80px' : '0'
-          }}
-        >
-          <Header
-            onMenuClick={handleMenuClick}
-          />
-
-          <div className="p-6">
+          }} >
+          <Header onMenuClick={handleMenuClick} />
+          <div className="flex flex-col p-4 sm:p-6 w-full">
             <DashboardHeader
               title="Dashboard"
-              subtitle={`Welcome back, ${userData?.FirstName} ${userData?.LastName}`}
+              subtitle={`Welcome back, ${userData?.FirstName || ''} ${userData?.LastName || ''}`}
               timeFilterOptions={timeFilterOptions}
               selectedTimeFilter={selectedTimeFilter}
               onTimeFilterChange={setSelectedTimeFilter}
@@ -335,38 +147,47 @@ const Index = () => {
 
             <div className="mt-6">
               <EnhancedStatisticsGrid statsData={statsData} />
-
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-              <EnhancedAudienceOverviewCard
-                title="Audience Overview"
-                subtitle={`Device types used to view your signatures`}
-                timeFilterOptions={timeFilterOptions}
-                selectedTimeFilter={selectedTimeFilter}
-                onTimeFilterChange={setSelectedTimeFilter}
-                onApplyDateRange={handleDateRangeApply}
-                audienceViewAndClickDraphData={audienceViewAndClickDraphData}
-              />
+              <Suspense fallback={<div>Loading Audience Overview...</div>}>
+                <EnhancedAudienceOverviewCard
+                  title="Audience Overview"
+                  subtitle="Device types used to view your signatures"
+                  timeFilterOptions={timeFilterOptions}
+                  selectedTimeFilter={selectedTimeFilter}
+                  onTimeFilterChange={setSelectedTimeFilter}
+                  onApplyDateRange={handleDateRangeApply}
+                  audienceViewAndClickDraphData={audienceViewAndClickDraphData}
+                />
+              </Suspense>
 
-              <EnhancedButtonClickTrackingCard
-                title="Button Click Tracking"
-                subtitle={`Track which buttons in your signature get the most clicks`}
-                timeFilterOptions={timeFilterOptions}
-                selectedTimeFilter={selectedTimeFilter}
-                onTimeFilterChange={setSelectedTimeFilter}
-                onApplyDateRange={handleDateRangeApply}
-                GraphData={btnClickDataArr}
-              />
-
-
+              <Suspense fallback={<div>Loading Button Click Tracking...</div>}>
+                <EnhancedButtonClickTrackingCard
+                  title="Button Click Tracking"
+                  subtitle="Track which buttons in your signature get the most clicks"
+                  timeFilterOptions={timeFilterOptions}
+                  selectedTimeFilter={selectedTimeFilter}
+                  onTimeFilterChange={setSelectedTimeFilter}
+                  onApplyDateRange={handleDateRangeApply}
+                  GraphData={btnClickDataArr}
+                />
+              </Suspense>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-              <EnhancedSignatureOverviewCard />
+              <EnhancedSignatureOverviewCard
+                title="Signature Engagement by Device Type"
+                subtitle="Track which platforms are being used to view and sign documents"
+                timeFilterOptions={timeFilterOptions}
+                selectedTimeFilter={selectedTimeFilter}
+                onTimeFilterChange={setSelectedTimeFilter}
+                onApplyDateRange={handleDateRangeApply}
+                operatingSystem={operatingSystem}
+              />
               <EnhancedSignatureUseCard
-                title="Button Click Tracking"
-                subtitle={`Track which buttons in your signature get the most clicks`}
+                title="Signature create"
+                subtitle="See the trend of signature creation over selected time periods."
                 timeFilterOptions={timeFilterOptions}
                 selectedTimeFilter={selectedTimeFilter}
                 onTimeFilterChange={setSelectedTimeFilter}
@@ -375,21 +196,12 @@ const Index = () => {
               />
             </div>
 
-            {/* <div className="mt-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-white text-xl font-semibold">Trending Signatures</h2>
-              </div>
-              <SignatureGrid
-                items={dashboardSampleSignatures}
-              />
-            </div> */}
-
             <div className="mt-6">
               <div className="bg-[#031123] border border-[#112F59] rounded-lg p-6">
                 <h2 className="text-xl font-semibold text-white mb-4">Signature Usage Analytics</h2>
+                <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-[#112F59] scrollbar-track-transparent">
+                  <table className="min-w-[800px] w-full">
 
-                <div className="overflow-x-auto">
-                  <table className="w-full">
                     <thead className="border-b border-[#112F59]">
                       <tr>
                         <th className="py-3 px-4 text-left text-white">Signature Name</th>
@@ -399,19 +211,18 @@ const Index = () => {
                         <th className="py-3 px-4 text-center text-white">Social Clicks</th>
                         <th className="py-3 px-4 text-center text-white">Button Clicks</th>
                         <th className="py-3 px-4 text-center text-white">Last Used</th>
-
                       </tr>
                     </thead>
                     <tbody>
-                      {signatures?.map((item) => (
-                        <tr key={item?._id} className="border-b border-[#112F59] hover:bg-[#051b37]">
-                          <td className="py-4 px-4 text-white flex items-center"> <span>{item?.SignatureName}</span> </td>
-                          <td className="py-4 px-4 text-center text-white">{item?.usageCount}</td>
-                          <td className="py-4 px-4 text-center text-[#01C8A9]">{item?.totalViews}</td>
-                          <td className="py-4 px-4 text-center text-white">{item?.buttonClicks + item?.socialClicks}</td>
-                          <td className="py-4 px-4 text-center text-gray-400">{item?.socialClicks}</td>
-                          <td className="py-4 px-4 text-center text-gray-400">{item?.buttonClicks}</td>
-                          <td className="py-4 px-4 text-center text-gray-400">{ConvertDate(item?.lastUsed)}</td>
+                      {(signatures || []).map((item) => (
+                        <tr key={item._id} className="border-b border-[#112F59] hover:bg-[#051b37]">
+                          <td className="py-4 px-4 text-white">{item.SignatureName}</td>
+                          <td className="py-4 px-4 text-center text-white">{item.usageCount}</td>
+                          <td className="py-4 px-4 text-center text-[#01C8A9]">{item.totalViews}</td>
+                          <td className="py-4 px-4 text-center text-white">{+item.buttonClicks + +item.socialClicks}</td>
+                          <td className="py-4 px-4 text-center text-gray-400">{item.socialClicks}</td>
+                          <td className="py-4 px-4 text-center text-gray-400">{item.buttonClicks}</td>
+                          <td className="py-4 px-4 text-center text-gray-400">{ConvertDate(item.lastUsed)}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -421,10 +232,11 @@ const Index = () => {
             </div>
           </div>
         </div>
+        {isMobile && (
+          <MobileNavbar onCreateClick={handleCreateSignature} />
+        )}
       </div>
 
-      {/* Trending Signature Popup */}
-      <TrendingSignaturePopup />
     </SidebarProvider>
   );
 };

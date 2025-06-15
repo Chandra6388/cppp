@@ -21,6 +21,7 @@ import Cropper, { Area } from 'react-easy-crop';
 import Slider from '@mui/material/Slider';
 import { uploadImg } from "@/service/auth/auth.service";
 import { SingleSignature, SocialMediaOption, ButtonOption, BackgroundOption, FormData } from "../../Utils/UserInterface";
+import { getCroppedImg } from "../../Utils/CommonFunctions"
 
 const SignatureEditorPageRedesigned = () => {
   const navigate = useNavigate()
@@ -56,6 +57,7 @@ const SignatureEditorPageRedesigned = () => {
     address: `${userDetails?.address || ""} ${userDetails?.country || ""}`
   });
 
+  console.log("cropSrc", cropSrc)
 
   useEffect(() => {
     if (location?.state?.type == "edit") {
@@ -341,52 +343,12 @@ const SignatureEditorPageRedesigned = () => {
   }
 
 
-  const buttonsHtml1 = selectedButtons.map((button) => {
-    let link = button.connect_with || "#";
-
-    const fontStyle = button.fontStyle === "italic"
-      ? "font-style: italic;"
-      : button.fontStyle === "bold"
-        ? "font-weight: bold;"
-        : button.fontStyle === "boldItalic"
-          ? "font-style: italic; font-weight: bold;"
-          : "";
-
-    const commonStyle = `
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background-color: ${colorMapping[button?.color]};
-      color: #fff;
-      text-decoration: none;
-      font-size: 12px;
-      padding: 6px 10px;
-      border-radius: 10px;
-      margin: 4px;
-      ${fontStyle}
-    `;
-
-    if (button.type === "contact_us") {
-      link = `tel:${button.connect_with}`;
-    }
-
-    return `
-      <a 
-        href="${`${Config.base_url}track-click?btnName=${encodeURIComponent(button.type)}&url=${encodeURIComponent(link)}&userId=${encodeURIComponent(userDetails?._id)}&linkType=btn&signatureId=__SIGNATURE_ID__`}" 
-        class="email-btn" 
-        style="${commonStyle}">
-        <img src="${btnsIcons[button.type]}" width="15px" style="margin-right: 4px; vertical-align: middle;" />
-        ${button.text}
-      </a>
-    `;
-  }).join("");
-
   const buttonsHtml = selectedButtons.map((button) => {
     let link = button.connect_with || "#";
     if (button.type === "contact_us") {
       link = `tel:${button.connect_with}`;
     }
-  
+
     const fontStyle = button.fontStyle === "italic"
       ? "font-style: italic;"
       : button.fontStyle === "bold"
@@ -394,24 +356,55 @@ const SignatureEditorPageRedesigned = () => {
         : button.fontStyle === "boldItalic"
           ? "font-style: italic; font-weight: bold;"
           : "";
-  
+
     const backgroundColor = colorMapping[button?.color] || "#000";
-  
+
     return `
-      <span style="background-color: ${backgroundColor}; display: inline-block; border-radius: 10px; margin: 4px;">
+      <span style="background-color: ${backgroundColor}; display: inline-block; border-radius: 4px; margin: 2px" class="disable-link">
         <a 
           href="${`${Config.base_url}track-click?btnName=${encodeURIComponent(button.type)}&url=${encodeURIComponent(link)}&userId=${encodeURIComponent(userDetails?._id)}&linkType=btn&signatureId=__SIGNATURE_ID__`}" 
           class="email-btn" 
-          style="color: #ffffff; text-decoration: none; display: inline-flex; align-items: center; padding: 6px 10px; ${fontStyle} font-size: 12px;">
+          style="color: #ffffff; text-decoration: none; display: inline-flex; align-items: center; padding: 6px 12px; ${fontStyle} font-size: 0.75em;">
+          
           <img src="${btnsIcons[button.type]}" width="15px" style="margin-right: 4px; vertical-align: middle;" />
           ${button.text}
         </a>
       </span>
     `;
   }).join("");
-  
 
-  
+
+  const buttonsHtml1 = selectedButtons.map((button) => {
+    let link = button.connect_with || "#";
+    if (button.type === "contact_us") {
+      link = `tel:${button.connect_with}`;
+    }
+
+    const fontStyle = button.fontStyle === "italic"
+      ? "font-style: italic;"
+      : button.fontStyle === "bold"
+        ? "font-weight: bold;"
+        : button.fontStyle === "boldItalic"
+          ? "font-style: italic; font-weight: bold;"
+          : "";
+
+    const backgroundColor = colorMapping[button?.color] || "#000";
+
+    return `
+     <td data-id="__react-email-column" style="position: relative;" class="disable-link">
+      <span style="background-color: ${backgroundColor}; display: inline-block; border-radius: 4px; margin: 2px">
+        <a 
+          href="${`${Config.base_url}track-click?btnName=${encodeURIComponent(button.type)}&url=${encodeURIComponent(link)}&userId=${encodeURIComponent(userDetails?._id)}&linkType=btn&signatureId=__SIGNATURE_ID__`}" 
+          class="email-btn" 
+          style="color: #ffffff; text-decoration: none; display: inline-flex; align-items: center; padding: 6px 12px; ${fontStyle} font-size: 0.75em;">
+          
+          <img src="${btnsIcons[button.type]}" width="15px" style="margin-right: 4px; vertical-align: middle;" />
+          ${button.text}
+        </a>
+      </span>
+      </td>
+    `;
+  }).join("");
 
 
   const socialMediaIcons = {
@@ -423,7 +416,7 @@ const SignatureEditorPageRedesigned = () => {
   }
 
   const socialMediaHtml = selectedSocialMedia.map((item) => {
-    return ` <p style="margin: 0px;"><a href="${`${Config.base_url}track-click?btnName=${encodeURIComponent(item.type)}&url=${encodeURIComponent(item.link || "#")}&userId=${encodeURIComponent(userDetails?._id)}&linkType=${"social"}&signatureId=__SIGNATURE_ID__`}" style="text-decoration: none; display: inline-block; margin-right:8px;" class="socal-btn">
+    return ` <p style="margin: 0px;" class="disable-link"><a href="${`${Config.base_url}track-click?btnName=${encodeURIComponent(item.type)}&url=${encodeURIComponent(item.link || "#")}&userId=${encodeURIComponent(userDetails?._id)}&linkType=${"social"}&signatureId=__SIGNATURE_ID__`}" style="text-decoration: none; display: inline-block; margin-right:8px;" class="socal-btn">
     <img src="${socialMediaIcons[item.type]}" alt="${item.type}" width="20" style="margin: 7px;"></a>
     </p>`;
   });
@@ -431,9 +424,24 @@ const SignatureEditorPageRedesigned = () => {
   const socialMediaHtml2 = selectedSocialMedia.map((item) => {
     return `<a href="${`${Config.base_url}track-click?btnName=${encodeURIComponent(item.type)}&url=${encodeURIComponent(item.link || "#")}&userId=${encodeURIComponent(userDetails?._id)}&linkType=social&signatureId=__SIGNATURE_ID__`}"
                style="display: inline-block; margin: 0 4px;">
-              <img src="${socialMediaIcons[item.type]}" alt="${item.type}" width="25">
+              <img src="${socialMediaIcons[item.type]}" alt="${item.type}" width="20">
             </a>`;
   }).join('');
+
+  const socialMediaHtml3 = selectedSocialMedia.map((item) => {
+    return `<td data-id="__react-email-column" style="padding-right: 4px;position: relative;width: 18px;">
+      <div
+        style="border-radius: 4px;height: 30px;width: 30px;margin-bottom: 10px;margin-right: 10px;" class="disable-link">
+          <a href="${`${Config.base_url}track-click?btnName=${encodeURIComponent(item.type)}&url=${encodeURIComponent(item.link || "#")}&userId=${encodeURIComponent(userDetails?._id)}&linkType=social&signatureId=__SIGNATURE_ID__`}"
+               style="display: inline-block; margin: 0 4px;">
+              <img src=${socialMediaIcons[item.type]} alt="${item.type}" width="25">
+            </a>
+      </div>
+    </td>`;
+  }).join('');
+
+
+
 
   const templatesArr = [
     {
@@ -470,7 +478,7 @@ const SignatureEditorPageRedesigned = () => {
                   </td>
                 </tr>
                 <tr>
-                  <td colspan="2" style="padding-top:4px;">
+                  <td colspan="2" style="padding-top:4px;" class="disable-link">
                     <strong class="text-detail text-label">Website:</strong>
                     <a href="${`${formData.website || "#"}`}"  class="text-detail" style="color: #1976d2; text-decoration: none;">${formData.website || "website"}</a>
                 </td>
@@ -495,7 +503,7 @@ const SignatureEditorPageRedesigned = () => {
           </td>
           <td
             style="width: 7%; background: #FFFFFF; border-left: 1px solid #e7e7e7; border-top-left-radius: 24.45px; border-bottom-left-radius: 18px;"
-            align="center">${socialMediaHtml.join('')}</td>
+            align="center" class="disable-link">${socialMediaHtml.join('')}</td>
         </tr>
       </table >
     </td >
@@ -516,81 +524,366 @@ const SignatureEditorPageRedesigned = () => {
     {
       id: "6825ddb868e8079f26761aa9",
       html:
-        `<table width="100%" cellpadding="0" cellspacing="0" bgcolor="#ffffff" class="responsive-signature-v2" style="background: #ffffff; border: 1px solid #d9d5d5; border-radius: 10px; width: 652px; ">
-  <tr>
-    <td>
-      <table cellpadding="0" cellspacing="0" width="100%" style="background-color: #ffffff; padding: 8px; border-radius: 8px;" class="main-templet">
-        <tr>
-          <!-- Left Side: Image + Social Icons -->
-          <td style="padding: 16px; vertical-align: top;" width="200" class="profile-section">
-            <table cellpadding="0" cellspacing="0" align="center">
-              <tr>
-                <td align="center">
-                  <img src="${formData.headshot_url || userDetails?.profile_img}" class="profile-img-v2" width="120" height="120"
-                       style="border-radius: 50%; display: block; border: 3px solid #64b5f6;" alt="profile img">
-                </td>
-              </tr>
-              <tr>
-                <td align="center" style="padding-top: 30px;">
-                  <div class="social-icons-v3" style="text-align: center;">
-                    ${socialMediaHtml2} <!-- make sure icons have class="social-icon-img" -->
-                  </div>
-                </td>
-              </tr>
-            </table>
-          </td>
+        `<table width="100%" cellpadding="0" cellspacing="0" bgcolor="#ffffff" class="responsive-signature-v2" style="background: #ffffff; border: 1px solid #d9d5d5; border-radius: 10px; width: 500px; ">
+          <tr>
+            <td>
+              <table cellpadding="0" cellspacing="0" width="100%" style="background-color: #ffffff; padding: 8px; border-radius: 8px;" class="main-templet">
+                <tr>
+                  <td style="padding: 16px; vertical-align: top;" width="200" >
+                    <table cellpadding="0" cellspacing="0" align="center">
+                      <tr>
+                        <td align="center">
+                      <img
+                      data-id="react-email-img"
+                      src=${formData.headshot_url || userDetails?.profile_img}
+                      style="display: block;outline: none;border: 1px solid #bbb6b6;text-decoration: none;border-radius: 10px;margin: 0px auto 10px;object-fit: contain;height: 120px;width: 120px;">
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                  <td style="padding-left: 16px; padding-top: 16px; vertical-align: top;" class="text-details-main">
+                    <h3 data-id="react-email-heading"
+                      style="font-size: 1.125em; font-weight: 700; line-height: 1.5; margin: 0px;"> ${formData?.fullName}</h3>
+                      <p data-id="react-email-text" style="font-size: 0.75em; line-height: 1.5; margin: 0px;">${formData?.jobTitle || "Profession "}</p>
+                   
+                     <table align="center" width="100%" data-id="react-email-row" role="presentation" cellspacing="0"
+                      cellpadding="0" border="0" style=" margin-left: 0px; margin-right: auto; width: auto;">
+                      <tbody style="width: 100%;">
+                        <tr style="width: 100%; position: relative;">
+                          <td data-id="__react-email-column" style="padding-right: 4px;position: relative;width: 18px;">
+                            <div style="background: #161616; height: 14px; width: 14px;"><img
+                                data-id="react-email-img"
+                                src="https://cdn-icons-gif.flaticon.com/8717/8717946.gif"
+                                style="display: block; outline: none; border: none; text-decoration: none; height: 14px; vertical-align: top; width: 14px;">
+                            </div>
+                          </td>
+                          <td data-id="__react-email-column" style="position: relative;">
+                            <p data-id="react-email-text" class="disable-link" style="font-size: 0.75em; line-height: 2; margin: 0px;"><a
+                                href="${`mailto:${formData.email || "#"}`}"
+                                style="color: rgb(51, 51, 51); text-decoration: none;">${formData.email || ""}</a>
+                                </p>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                   
+                      <table align="center" width="100%" data-id="react-email-row" role="presentation" cellspacing="0"
+                      cellpadding="0" border="0" style=" margin-left: 0px; margin-right: auto; width: auto;">
+                      <tbody style="width: 100%;">
+                        <tr style="width: 100%; position: relative;">
+                          <td data-id="__react-email-column" style="padding-right: 4px;position: relative;width: 18px;">
+                            <div style="background: #161616; height: 14px;  width: 14px"><img
+                                data-id="react-email-img"
+                                src="https://www.logoai.com/email-signature-generator/_next/static/media/company.a55f2700.png"
+                                style="display: block; outline: none; border: none; text-decoration: none; height: 14px; vertical-align: top; width: 14px;">
+                            </div>
+                          </td>
+                          <td data-id="__react-email-column" style="position: relative;">
+                            <p data-id="react-email-text" style="font-size: 0.75em; line-height: 2; margin: 0px;">${formData?.company || "Itswin Technology"}</p>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
 
-          <!-- Right Side: Info -->
-          <td style="padding-left: 16px; padding-top: 16px; vertical-align: top;" class="text-details-main">
-            <h3 style="color: #999999; font-size: 20px; font-weight: 500;line-height: 100%;letter-spacing: 0%;color: #7B7B7B; margin: 0;" class="role-heading">
-              ${formData?.jobTitle || "Profession "}
-            </h3>
-            <h1 style="font-size: 30px; font-weight: 900;line-height: 100%;margin: 2px 0 8px;color: #000000;" class="name-heading">
-              ${formData?.fullName}
-            </h1>
-            <p style="font-weight: 400; font-size: 12px; color: #999999; margin: 4px 0;">
-              <span style="display: inline-block; min-width: 60px;" class="text-details">Phone:</span>
-              <a href="${`tel:${formData.phone || "#"}`}" style="color: #1976d2; text-decoration: none;" class="text-details">${formData.phone || "Phone"}</a>
-            </p>
-            <p style="font-weight: 400; font-size: 12px; color: #999999; margin: 4px 0;">
-              <span style="display: inline-block; min-width: 60px;" class="text-details">Email:</span>
-              <a href="${`mailto:${formData.email || "#"}`}" style="color: #1976d2; text-decoration: none;" class="text-details">${formData.email || ""}</a>
-            </p>
-            <p style="font-weight: 400; font-size: 12px; color: #999999; margin: 4px 0;">
-              <span style="display: inline-block; min-width: 60px;" class="text-details">Website:</span>
-              <a href="${`${formData.website || "#"}`}" style="color: #1976d2; text-decoration: none;" class="text-details">${formData.website || "website"}</a>
-            </p>
-            <p style="font-weight: 400; font-size: 12px; color: #999999; margin: 4px 0;" class="text-details">
-              <span style="display: inline-block; min-width: 60px;" class="text-details">Company:</span>
-              ${formData?.company || "company name"}
-            </p>
-            <p style="font-weight: 400; font-size: 12px; color: #999999; margin: 4px 0;" class="text-details">
-              <span style="display: inline-block; min-width: 60px;" class="text-details">Address:</span>
-              ${formData?.address || ""}
-            </p>
-          </td>
-        </tr>
-
-        <!-- Button Row -->
-        <tr>
-          <td colspan="2" style="padding-top: 20px;" class="btn-main">
-            <div class="">
-              <table cellpadding="0" cellspacing="0" style="width: auto; display: inline-block;">
+                    <table align="center" width="100%" data-id="react-email-row" role="presentation" cellspacing="0"
+                      cellpadding="0" border="0" style=" margin-left: 0px; margin-right: auto; width: auto;">
+                      <tbody style="width: 100%;">
+                        <tr style="width: 100%; position: relative;">
+                          <td data-id="__react-email-column" style="padding-right: 4px;position: relative;width: 18px;">
+                            <div style="background: #161616; height: 14px;  width: 14px"><img
+                                data-id="react-email-img"
+                                src="https://www.logoai.com/email-signature-generator/_next/static/media/mobile.326f1fab.png"
+                                style="display: block; outline: none; border: none; text-decoration: none; height: 14px; vertical-align: top; width: 14px;">
+                            </div>
+                          </td>
+                          <td data-id="__react-email-column" style="position: relative;">
+                            <p data-id="react-email-text" style="font-size: 0.75em;  line-height: 2; margin: 0px;" class="disable-link"><a
+                               href="${`tel:${formData.phone || "#"}`}"
+                                style="color: rgb(51, 51, 51); text-decoration: none;">${formData.phone || "Phone"}</a></p>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                 
+              <table align="center" width="100%" data-id="react-email-row" role="presentation" cellspacing="0"
+                      cellpadding="0" border="0" style=" margin-left: 0px; margin-right: auto; width: auto;">
+                      <tbody style="width: 100%;">
+                        <tr style="width: 100%; position: relative;">
+                          <td data-id="__react-email-column" style="padding-right: 4px;position: relative;width: 18px;">
+                            <div style="background: #161616; height: 14px;  width: 14px"><img
+                                data-id="react-email-img"
+                                src="https://www.logoai.com/email-signature-generator/_next/static/media/website.bc473089.png"
+                                style="display: block; outline: none; border: none; text-decoration: none; height: 14px; vertical-align: top; width: 14px;">
+                            </div>
+                          </td>
+                          <td data-id="__react-email-column" style="position: relative;">
+                            <p data-id="react-email-text" style="font-size: 0.75em;  line-height: 2; margin: 0px;" class="disable-link">
+                            <a  href="${`${formData.website || "#"}`}" data-id="react-email-link" target="_blank"
+                                style="color: rgb(51, 51, 51); text-decoration: none;">${formData.website || "website"}</a></p>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2" class="btn-main">
+              <table cellpadding="0" cellspacing="0" style="margin-bott">
                 <tr>
                   ${buttonsHtml}
                 </tr>
               </table>
-            </div>
-          </td>
-        </tr>
+            </td>
+          </tr>
+          <tr>
+            <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border-top: 1px solid #cdc3c3;padding-top: 10px;">
+              <tbody>
+                <tr>
+                  <td style="vertical-align: middle;">
+                    <table cellpadding="0" cellspacing="0" border="0" style="display: inline-table;">
+                      <tbody>
+                      <tr>
+                        <td style="padding: 0 8px;" class="disable-link">
+                        ${socialMediaHtml2}
+                        </td>
+                      </tr>
+                      </tbody>
+                    </table>
+                  </td>
+                  <td style="text-align: right;vertical-align: middle;font-size: 14px;color: #999999;padding: 0 13px;" class="address-cell">
+                    <p data-id="react-email-text" style="font-size: 1em;line-height: 2;margin: 0px;color: #1a1919;">${formData?.address || ""}</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </tr>
+        </table>
+    </td >
+  </tr >
+</table >`
 
-      </table>
-    </td>
-  </tr>
-</table>
 
-`
     },
+    {
+      id: "68497fcbe50be0ccb2b08c00",
+      html: `
+      <div class="mx-[-15px] px-[15px] py-[20px] [&amp;_*]:[transition:all_.3s,font-size_0s]" >
+  <div className="signature-wrapper">
+  <table align="center" width="100%" data-id="__react-email-container" role="presentation" cellspacing="0"
+    cellpadding="0" border="0"
+    style="font-family: Arial;font-size: 16px;margin-left: 0px;margin-right: auto;width: 500px !important;">
+    <tbody>
+      <tr style="width: 100%;">
+        <td>
+          <div class="animate-fade" data-replace-with-children="true">
+            <table align="center" width="100%" data-id="react-email-row" role="presentation" cellspacing="0"
+              cellpadding="0" border="0" style="font-size: 100%;">
+              <tbody style="width: 100%;">
+                <tr style="width: 100%; position: relative;">
+                  <td data-id="__react-email-column"
+                    style="position: relative; text-align: center; vertical-align: top; width: 160px;">
+                    <img
+                      data-id="react-email-img"
+                      src=${formData.headshot_url || userDetails?.profile_img}
+                      style="display: block;outline: none;border: 1px solid #bbb6b6;text-decoration: none;border-radius: 10px;margin: 0px auto 10px;object-fit: contain;height: 120px;width: 120px;">
+                    <h3 data-id="react-email-heading"
+                      style="font-size: 1.125em; font-weight: 700; line-height: 1.5; margin: 0px;"> ${formData?.fullName}</h3>
+                    <p data-id="react-email-text" style="font-size: 0.75em; line-height: 1.5; margin: 0px;">${formData?.jobTitle || "Profession "}</p>
+                  </td>
+                  <td data-id="__react-email-column"
+                    style="padding-left: 20px; padding-right: 20px; position: relative; vertical-align: top;">
+                    <table align="center" width="100%" data-id="react-email-row" role="presentation" cellspacing="0"
+                      cellpadding="0" border="0" style=" margin-left: 0px; margin-right: auto; width: auto;">
+                      <tbody style="width: 100%;">
+                        <tr style="width: 100%; position: relative;">
+                          <td data-id="__react-email-column" style="padding-right: 4px;position: relative;width: 18px;">
+                            <div style="background: #161616; height: 14px; width: 14px;"><img
+                                data-id="react-email-img"
+                                src="https://cdn-icons-gif.flaticon.com/8717/8717946.gif"
+                                style="display: block; outline: none; border: none; text-decoration: none; height: 14px; vertical-align: top; width: 14px;">
+                            </div>
+                          </td>
+                          <td data-id="__react-email-column" style="position: relative;">
+                            <p data-id="react-email-text" style="font-size: 0.75em;  line-height: 2; margin: 0px;" class="disable-link"><a
+                                href="${`mailto:${formData.email || "#"}`}"
+                                style="color: rgb(51, 51, 51); text-decoration: none;">${formData.email || ""}</a></p>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <table align="center" width="100%" data-id="react-email-row" role="presentation" cellspacing="0"
+                      cellpadding="0" border="0" style=" margin-left: 0px; margin-right: auto; width: auto;">
+                      <tbody style="width: 100%;">
+                        <tr style="width: 100%; position: relative;">
+                          <td data-id="__react-email-column" style="padding-right: 4px;position: relative;width: 18px;">
+                            <div style="background: #161616; height: 14px;  width: 14px"><img
+                                data-id="react-email-img"
+                                src="https://www.logoai.com/email-signature-generator/_next/static/media/mobile.326f1fab.png"
+                                style="display: block; outline: none; border: none; text-decoration: none; height: 14px; vertical-align: top; width: 14px;">
+                            </div>
+                          </td>
+                          <td data-id="__react-email-column" style="position: relative;">
+                            <p data-id="react-email-text" style="font-size: 0.75em; line-height: 2; margin: 0px;" class="disable-link"><a
+                               href="${`tel:${formData.phone || "#"}`}"
+                                style="color: rgb(51, 51, 51); text-decoration: none;">${formData.phone || "Phone"}</a></p>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <table align="center" width="100%" data-id="react-email-row" role="presentation" cellspacing="0"
+                      cellpadding="0" border="0" style=" margin-left: 0px; margin-right: auto; width: auto;">
+                      <tbody style="width: 100%;">
+                        <tr style="width: 100%; position: relative;">
+                          <td data-id="__react-email-column" style="padding-right: 4px;position: relative;width: 18px;">
+                            <div style="background: #161616; height: 14px;  width: 14px"><img
+                                data-id="react-email-img"
+                                src="https://www.logoai.com/email-signature-generator/_next/static/media/company.a55f2700.png"
+                                style="display: block; outline: none; border: none; text-decoration: none; height: 14px; vertical-align: top; width: 14px;">
+                            </div>
+                          </td>
+                          <td data-id="__react-email-column" style="position: relative;">
+                            <p data-id="react-email-text" style="font-size: 0.75em; line-height: 2; margin: 0px;">${formData?.company || "Itswin Technology"}</p>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <table align="center" width="100%" data-id="react-email-row" role="presentation" cellspacing="0"
+                      cellpadding="0" border="0" style=" margin-left: 0px; margin-right: auto; width: auto;">
+                      <tbody style="width: 100%;">
+                        <tr style="width: 100%; position: relative;">
+                          <td data-id="__react-email-column" style="padding-right: 4px;position: relative;width: 18px;">
+                            <div style="background: #161616; height: 14px;  width: 14px"><img
+                                data-id="react-email-img"
+                                src="https://www.logoai.com/email-signature-generator/_next/static/media/website.bc473089.png"
+                                style="display: block; outline: none; border: none; text-decoration: none; height: 14px; vertical-align: top; width: 14px;">
+                            </div>
+                          </td>
+                          <td data-id="__react-email-column" style="position: relative;">
+                            <p data-id="react-email-text" style="font-size: 0.75em; line-height: 2; margin: 0px;"  class="disable-link"><a
+                                href="${`${formData.website || "#"}`}" data-id="react-email-link" target="_blank"
+                                style="color: rgb(51, 51, 51); text-decoration: none;">${formData.website || "website"}</a></p>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <table align="center" width="100%" data-id="react-email-row" role="presentation" cellspacing="0"
+                      cellpadding="0" border="0" style="margin-left: 0px; margin-right: auto; width: auto;">
+                      <tbody style="width: 100%;">
+                        <tr style="width: 100%; position: relative;">
+                          <td data-id="__react-email-column" style="padding-right: 4px;position: relative;width: 18px;">
+                            <div style="background: #161616; height: 14px;  width: 14px"><img
+                                data-id="react-email-img"
+                                src="https://www.logoai.com/email-signature-generator/_next/static/media/address.cda8427d.png"
+                                style="display: block; outline: none; border: none; text-decoration: none; height: 14px; vertical-align: top; width: 14px;">
+                            </div>
+                          </td>
+                          <td data-id="__react-email-column" style="position: relative;">
+                            <p data-id="react-email-text" style="font-size: 0.75em; line-height: 2; margin: 0px;">${formData?.address || ""}</p>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <table align="center" width="100%" data-id="react-email-row" role="presentation" cellspacing="0"
+                      cellpadding="0" border="0" style="margin-left: 0px; margin-top: 10px; margin-right: auto; width: auto;">
+                      <tbody style="width: 100%;">
+                        <tr style="width: 100%; position: relative;">
+                           ${socialMediaHtml3}
+                        </tr>
+                      </tbody>
+                    </table>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div style="margin-top: 12px;">
+             ${buttonsHtml}
+               
+            </div>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+</div>`
+    },
+    {
+      id: "684a5e15dd25bb77fe4a9807",
+      html:
+        `<div class="[&amp;_*]:[transition:all_.3s,font-size_0s]" style="background: white;padding-top:15px; padding-bottom:15px; ">
+          <div className="signature-wrapper">
+            <table align="center" width="100%" data-id="__react-email-container" role="presentation" cellspacing="0"
+              cellpadding="0" border="0"
+              style="font-family: Arial;font-size: 16px;margin-left: 0px;margin-right: auto;width: 500px !important;">
+              <tbody>
+                <tr style="width: 100%;">
+                  <td>
+                    <div class="animate-fade" data-replace-with-children="true">
+                      <table align="center" width="100%" data-id="react-email-row" role="presentation" cellspacing="0"
+                        cellpadding="0" border="0" style="font-size: 100%; margin-bottom: 20px;">
+                        <tbody style="width: 100%;">
+                          <tr style="width: 100%; position: relative;">
+                            <td data-id="__react-email-column" style="position: relative;">
+                              <h3 data-id="react-email-heading"
+                                style="font-size: 1.125em; font-weight: 700; line-height: 1.75; margin: 0px; color: rgb(0, 83, 159);">${formData?.fullName}</h3>
+                              <p data-id="react-email-text" style="font-size: 0.75em; line-height: 1; margin: 0px;">${formData?.jobTitle || "Profession "}</p>
+                            </td>
+                            <td data-id="__react-email-column" style="position: relative;">
+                              <table align="left" width="100%" data-id="react-email-row" role="presentation" cellspacing="0"
+                                cellpadding="0" border="0" style="margin-left: auto; margin-right: 0px; width: auto;">
+                                <tbody>
+                                  <tr style="width: 100%; position: relative;">
+                                    ${socialMediaHtml3}
+                                  </tr>
+                                </tbody>
+                              </table>
+
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                      <table align="center" width="100%" data-id="react-email-row" role="presentation" cellspacing="0"
+                        cellpadding="0" border="0" style="font-size: 100%;margin-left: 0px;margin-right: auto;width: auto;margin-top: 22px;">
+                        <tbody style="width: 100%;">
+                          <tr style="width: 100%; position: relative;">
+                            <td data-id="__react-email-column" style="padding-right: 15px; position: relative;"><img
+                              data-id="react-email-img"
+                               src=${formData.headshot_url || userDetails?.profile_img}
+                              style="display: block; outline: none; border: none; text-decoration: none; height: 120px; width: 120px; object-fit: contain; border-radius: 10px;">
+                            </td>
+                            <td data-id="__react-email-column" style="position: relative;">
+                              <p data-id="react-email-text" style="font-size: 0.75em; line-height: 2; margin: 0px;" class="disable-link">
+                              <span style="color: rgb(0, 83, 159); display: inline;" class="disable-link">Email：</span>
+                              <a href="${`mailto:${formData.email || "#"}`}"
+                          style="color: rgb(51, 51, 51); text-decoration: none;">${formData.email || ""}</a></p>
+                            <p data-id="react-email-text" style="font-size: 0.75em; class="disable-link" line-height: 2; margin: 0px;" class="disable-link"><span
+                              style="color: rgb(0, 83, 159); display: inline;" >Mobile：</span><a href="${`tel:${formData.phone || "#"}`}"
+                          style="color: rgb(51, 51, 51); text-decoration: none;">${formData.phone || "Phone"}</a></p>
+                          <p data-id="react-email-text" style="font-size: 0.75em; line-height: 2; margin: 0px;"><span
+                            style="color: rgb(0, 83, 159); display: inline;">Company：</span>${formData?.company || "Itswin Technology"}</p>
+                          <p data-id="react-email-text" style="font-size: 0.75em; class="disable-link" line-height: 2; margin: 0px;" class="disable-link"><span
+                            style="color: rgb(0, 83, 159); display: inline;" >Site：</span><a
+                              href="${`${formData.website || "#"}`}" data-id="react-email-link" target="_blank"
+                          style="color: rgb(51, 51, 51); text-decoration: none;">${formData.website || "website"}</a></p>
+                        <p data-id="react-email-text" style="font-size: 0.75em; line-height: 2; margin: 0px;"><span
+                          style="color: rgb(0, 83, 159); display: inline;">Address：</span>${formData?.address || ""}
+                        </p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+               <div style="margin-top: 12px;">
+             ${buttonsHtml}
+            </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+    </table >
+  </div >
+</div >`
+
+    }
 
   ]
 
@@ -609,13 +902,13 @@ const SignatureEditorPageRedesigned = () => {
 </table>
 `
 
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    console.log("cropSrc", file)
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setCropSrc(reader.result as string); // base64 preview
+        setCropSrc(reader.result as string);
         setShowCropper(true);
       };
       reader.readAsDataURL(file);
@@ -625,44 +918,6 @@ const SignatureEditorPageRedesigned = () => {
   const onCropComplete = useCallback((_croppedArea: Area, croppedAreaPixels: Area) => {
     setCroppedAreaPixels(croppedAreaPixels);
   }, []);
-
-
-  const getCroppedImg = (imageSrc: string, crop: Area): Promise<Blob> => {
-    return new Promise((resolve, reject) => {
-      const image = new window.Image();
-      image.src = imageSrc;
-      image.crossOrigin = 'anonymous';
-
-      image.onload = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = crop.width;
-        canvas.height = crop.height;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return reject('Canvas context not found');
-
-        ctx.drawImage(
-          image,
-          crop.x,
-          crop.y,
-          crop.width,
-          crop.height,
-          0,
-          0,
-          crop.width,
-          crop.height
-        );
-
-        canvas.toBlob((blob) => {
-          if (!blob) return reject('Canvas is empty');
-          resolve(blob); // ✅ This is what we upload
-        }, 'image/jpeg');
-      };
-
-      image.onerror = () => reject('Image load failed');
-    });
-  };
-
-
 
   const handleCropApply = async () => {
     if (!cropSrc || !croppedAreaPixels) return;
@@ -698,8 +953,6 @@ const SignatureEditorPageRedesigned = () => {
       setCropSrc(null);
     }
   };
-
-
 
   const formField = [
     {
@@ -879,8 +1132,7 @@ const SignatureEditorPageRedesigned = () => {
                                     crop={crop}
                                     zoom={zoom}
                                     aspect={1}
-                                    cropShape="round"
-                                    showGrid={false}
+                                    cropShape="rect"
                                     onCropChange={setCrop}
                                     onZoomChange={setZoom}
                                     onCropComplete={onCropComplete}
@@ -901,11 +1153,11 @@ const SignatureEditorPageRedesigned = () => {
                                     >
                                       Cancel
                                     </button>
-                                     
-                                    <Button onClick={handleCropApply}  variant="teal"  className="text-white" disabled={uploading}>
+
+                                    <Button onClick={handleCropApply} variant="teal" className="text-white" disabled={uploading}>
                                       {uploading ? "Uploading..." : "Apply"}
                                     </Button>
-                                    
+
                                   </div>
                                 </div>
                               </div>
@@ -1201,7 +1453,7 @@ const SignatureEditorPageRedesigned = () => {
                   <div
                     className="email-preview-wrapper border border-[#112F59] rounded-lg p-4 mb-6 min-h-[200px]"
                     style={{
-                      background: '#f0f0f0',
+                      background: '#fff',
                       height: '400px',
                       display: 'flex',
                       alignItems: 'center',

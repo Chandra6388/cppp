@@ -37,7 +37,7 @@ const AppWithAuth = () => {
       navigate("/signup");
       return;
     }
-
+    
     if (endpoint === "/") {
       navigate("/login");
       return;
@@ -97,11 +97,10 @@ const AppWithAuth = () => {
 
   }, [navigate, endpoint]);
 
-
   return (
     <AuthProvider navigate={navigate}>
       <Routes>
-        <Route path="/login" element={<LoginPage />} />
+        <Route path="/login" element={<LoginPage />} /> 
         <Route path="/signup" element={<SignUpPage />} />
         <Route path="/forgot-password" element={<ForgotPass />} />
         <Route path="/reset-password" element={<ResetPassword />} />

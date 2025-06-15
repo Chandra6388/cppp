@@ -1,26 +1,26 @@
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import Header from "@/components/layout/Header";
 import MainSidebar from "@/components/layout/Sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useResponsiveSidebar } from "@/hooks/use-responsive-sidebar";
-import { useAuth } from "@/hooks/use-auth";
 import MobileNavbar from "@/components/layout/MobileNavbar";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { LogOut, Shield, CreditCard, User, Check, Pencil, X, Mail, Building, Calendar, Camera, MapPin, Phone, Briefcase } from "lucide-react";
+import { CreditCard, User, Check, Pencil, X, Mail, Building, Calendar, Camera, MapPin, Phone, Briefcase } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ConvertDate } from '../../Utils/CommonFunctions'
-import { updateProfileImg, getUserById } from '@/service/auth/auth.service'
+import { updateProfileImg, getUserById, updateUser, uploadImg } from '@/service/auth/auth.service'
 import { SEO } from '../../Utils/Helmet'
 import { EditableFieldProps } from "../../Utils/UserInterface";
-import { updateUser } from "@/service/auth/auth.service";
-import {uploadImg} from "@/service/auth/auth.service";
 
+import Cropper, { Area } from 'react-easy-crop';
+import { getCroppedImg } from "../../Utils/CommonFunctions"
+import Slider from '@mui/material/Slider';
 
 
 const EditableField: React.FC<EditableFieldProps> = ({ label, value, icon: Icon, onSave, type = "text", placeholder, isEditable = true, name }) => {
@@ -129,15 +129,18 @@ const EditableField: React.FC<EditableFieldProps> = ({ label, value, icon: Icon,
 
 const AccountPage = () => {
   const isMobile = useIsMobile();
-  const location = useLocation()
   const fileInputRef = useRef(null);
   const userdata = JSON.parse(localStorage.getItem('user'))
   const { sidebarOpen, setSidebarOpen, sidebarCollapsed, setSidebarCollapsed } = useResponsiveSidebar();
-  const { logout } = useAuth();
+  const [showCropper, setShowCropper] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   const [uploading, setUploading] = useState(false);
   const [userDetails, setUserDetails] = useState(null)
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
   const [userProfile, setUserProfile] = useState({
     displayName: userdata?.FirstName + " " + userdata?.LastName || 'N/A',
     email: userdata?.Email || 'N/A',
@@ -148,7 +151,6 @@ const AccountPage = () => {
     joinedDate: ConvertDate(userdata?.createdAt) || 'N/A',
     bio: 'N/A'
   });
-
 
   const handleMenuClick = () => {
     setSidebarOpen(true);
@@ -192,22 +194,10 @@ const AccountPage = () => {
     });
   };
 
-
-  const uploadProfilePicture = async (file) => {
+  const uploadProfilePicture = async (file: string) => {
     try {
-      setUploading(true);   
-      const uploadResponse = await uploadImg({ file });
-      if (!uploadResponse?.url) {
-        throw new Error("Failed to upload image to S3");
-      }
-   
-      const req = {
-        id: userdata?._id,
-        url: uploadResponse.url
-      };
-  
+      const req = { id: userdata?._id, url: file };
       const updateRes = await updateProfileImg(req);
-  
       if (updateRes?.status) {
         toast({
           title: "Profile picture updated",
@@ -215,7 +205,7 @@ const AccountPage = () => {
           variant: "success",
           duration: 1000,
         });
-        getUserData(); // 🔄 Refresh user info
+        getUserData();
       } else {
         throw new Error(updateRes?.message || "Failed to update image in database");
       }
@@ -228,10 +218,10 @@ const AccountPage = () => {
         duration: 1500,
       });
     } finally {
-      setUploading(false); // 🛑 Stop spinner no matter what
+      setUploading(false);
     }
   };
-  
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -255,25 +245,47 @@ const AccountPage = () => {
     fileInputRef.current.click();
   };
 
-  const handleFileChange = async (event) => {
-    const file = event.target.files[0];
+  const endpoint = window.location.hash.replace(/^#/, '').split('?')[0];
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (file) {
-      const base64 = await convertToBase64(file);
-      uploadProfilePicture(base64);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setCropSrc(reader.result as string);
+        setShowCropper(true);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
-  const convertToBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file); // Converts to base64
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = (error) => reject(error);
-    });
+  const onCropComplete = useCallback((_croppedArea: Area, croppedAreaPixels: Area) => {
+    setCroppedAreaPixels(croppedAreaPixels);
+  }, []);
+
+  const handleCropApply = async () => {
+    if (!cropSrc || !croppedAreaPixels) return;
+
+    try {
+      setUploading(true);
+      const blob = await getCroppedImg(cropSrc, croppedAreaPixels);
+      const uploadRes = await uploadImg({ file: blob });
+
+      if (!uploadRes?.url) throw new Error('Upload failed');
+      uploadProfilePicture(uploadRes.url)
+
+    } catch (err: any) {
+      toast({
+        title: 'Upload failed',
+        description: err.message || 'Something went wrong',
+        variant: 'destructive'
+      });
+    } finally {
+      setUploading(false);
+      setShowCropper(false);
+      setCropSrc(null);
+    }
   };
-
-  const endpoint = window.location.hash.replace(/^#/, '').split('?')[0];
-
 
   return (
     <>
@@ -302,7 +314,6 @@ const AccountPage = () => {
                 animate="visible"
                 className="space-y-6"
               >
-                {/* User Profile Card */}
                 <motion.div
                   variants={itemVariants}
                   className="bg-[#031123] border border-[#112F59] rounded-lg overflow-hidden shadow-lg"
@@ -313,7 +324,6 @@ const AccountPage = () => {
                         <div className="w-32 h-32 rounded-full bg-gradient-to-br from-[#01C8A9] to-[#3B82F6] flex items-center justify-center text-white text-3xl font-bold border-4 border-[#031123] overflow-hidden">
                           <img src={userDetails?.profile_img} alt="User Profile Img" />
                         </div>
-
                         <input
                           type="file"
                           accept="image/*"
@@ -321,7 +331,6 @@ const AccountPage = () => {
                           onChange={handleFileChange}
                           className="hidden"
                         />
-
                         <button
                           onClick={handleButtonClick}
                           disabled={uploading}
@@ -336,30 +345,65 @@ const AccountPage = () => {
                       </div>
                     </div>
                   </div>
-
                   <div className="pt-20 px-6 pb-6">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
                       <div>
                         <h2 className="text-white text-2xl font-medium">{userProfile?.displayName}</h2>
-                        {/* <p className="text-gray-400">{userProfile.position} at {userProfile.company}</p> */}
                       </div>
-
                       <div className="mt-4 sm:mt-0 flex flex-wrap gap-2">
-                        {/* <span className="bg-[#01C8A9]/20 text-[#01C8A9] text-xs px-3 py-1 rounded-full">Premium</span> */}
                         <span className="bg-blue-500/20 text-blue-400 text-xs px-3 py-1 rounded-full">Verified</span>
                         <span className="bg-purple-500/20 text-purple-400 text-xs px-3 py-1 rounded-full">{userProfile?.location}</span>
                       </div>
                     </div>
-
                   </div>
                 </motion.div>
 
-                {/* Account Settings Cards */}
+
+                <div className="space-y-4 p-6 bg-[#0a1a2f] rounded-lg max-w-md text-white">
+                  {showCropper && cropSrc && (
+                    <div className="fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center">
+                      <div className="w-full max-w-sm bg-[#020e1f] rounded-lg overflow-hidden border border-white shadow-2xl">
+                        <div className="relative h-96">
+                          <Cropper
+                            image={cropSrc}
+                            crop={crop}
+                            zoom={zoom}
+                            aspect={1}
+                            cropShape="round"
+                            showGrid={false}
+                            onCropChange={setCrop}
+                            onZoomChange={setZoom}
+                            onCropComplete={onCropComplete}
+                          />
+                        </div>
+                        <div className="space-y-4 px-6 py-4">
+                          <Slider
+                            value={zoom}
+                            min={1}
+                            max={3}
+                            step={0.1}
+                            onChange={(_, newValue) => setZoom(newValue as number)}
+                          />
+                          <div className="flex justify-between">
+                            <button
+                              onClick={() => setShowCropper(false)}
+                              className="px-4 py-2 bg-gray-500 text-white rounded"
+                            >
+                              Cancel
+                            </button>
+                            <Button onClick={handleCropApply} variant="teal" className="text-white" disabled={uploading}>
+                              {uploading ? "Uploading..." : "Apply"}
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
                 <motion.div
                   variants={itemVariants}
                   className="grid grid-cols-1 md:grid-cols-2 gap-6"
                 >
-                  {/* Personal Info */}
                   <div className="bg-[#031123] border border-[#112F59] rounded-lg p-6 shadow-lg">
                     <div className="flex items-center gap-3 mb-6">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500/50 to-blue-700/50 flex items-center justify-center">
@@ -367,7 +411,6 @@ const AccountPage = () => {
                       </div>
                       <h3 className="text-white font-medium text-lg">Personal Information</h3>
                     </div>
-
                     <div className="space-y-3">
                       <EditableField
                         label="Full Name"
@@ -440,10 +483,10 @@ const AccountPage = () => {
                         </div>
                       </div>
 
-                      <div className="bg-[#031123]/50 p-3 rounded-lg">
+                      {/* <div className="bg-[#031123]/50 p-3 rounded-lg">
                         <Label className="text-gray-400 text-sm">Last Login</Label>
                         <p className="text-white mt-1">April 9, 2025 - 14:32 GMT</p>
-                      </div>
+                      </div> */}
                       {/* 
                     <div className="pt-4">
                       <Button
@@ -492,7 +535,7 @@ const AccountPage = () => {
           </div>
 
           {isMobile && (
-            <MobileNavbar onCreateClick={handleCreateClick} />
+            <MobileNavbar  />
           )}
         </div>
       </SidebarProvider>

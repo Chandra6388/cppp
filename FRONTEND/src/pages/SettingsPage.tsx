@@ -52,40 +52,7 @@ const SettingsPage = () => {
     }
   };
 
-
-  // const handleChngeWhatsappNotification = async (checked: boolean) => {
-  //   const req = { userId: UserDetails._id, status: !checked }
-  //   await getWhatsappNotificationSettings(req)
-  //     .then((res) => {
-  //       if (res.status) {
-  //         sweetAlert("Success", res?.message, "success");
-  //       }
-  //       else {
-  //         sweetAlert("Error", res?.message, "error");
-  //       }
-  //     })
-  //     .catch((err) => {
-  //       sweetAlert("Error", "Something went wrong", "error");
-  //     })
-  // }
-
-  // const handleEmailNotificationChange = async (checked: boolean) => {
-  //   const req = { userId: UserDetails._id, status: !checked }
-  //   await getEmailNotificationSettings(req)
-  //     .then((res) => {
-  //       if (res.status) {
-  //         sweetAlert("Success", res?.message, "success");
-  //       }
-  //       else {
-  //         sweetAlert("Error", res?.message, "error");
-  //       }
-  //     })
-  //     .catch((err) => {
-  //       sweetAlert("Error", "Something went wrong", "error");
-  //     })
-  // }
-
-
+ 
   const handleEmailNotificationChange = async (checked: boolean) => {
     const req = { userId: UserDetails._id, status: !checked }
     Swal.fire({

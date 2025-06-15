@@ -57,3 +57,10 @@ export interface SingleSignature {
     }
   }
 }
+
+export interface Errors {
+  email?: string,
+  password?: string;
+  newPassword?:string;
+  confirmPassword?:string
+}

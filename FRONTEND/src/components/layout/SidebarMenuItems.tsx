@@ -12,7 +12,9 @@ import {
   Trash,
   Box,
   Bell,
-  RadioTower 
+  RadioTower ,
+  NotebookPen ,
+  MessagesSquare
 } from "lucide-react";
 import {
   SidebarMenu,
@@ -44,6 +46,10 @@ const SidebarMenuItems = ({
       { path: "/admin/dashboard", label: "Home", icon: Home },
       { path: "/admin/support-tickets", label: "Support Tickets", icon: TicketCheck },
       { path: "/admin/broadcast", label: "Broadcast", icon: RadioTower  },
+      { path: "/admin/all-blog", label: "All Blog", icon: NotebookPen},
+      { path: "/admin/contactUs", label: "Contact Us", icon: MessagesSquare},
+
+
 
     ],
     EMPLOYEE: [

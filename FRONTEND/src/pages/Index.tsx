@@ -11,6 +11,8 @@ import EnhancedSignatureUseCard from "@/components/dashboard/EnhancedSignatureUs
 import TrendingSignaturePopup from "@/components/signature/TrendingSignaturePopup";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import { ConvertDate } from "../../Utils/CommonFunctions";
+import MobileNavbar from "@/components/layout/MobileNavbar";
+
 import { dashboardSummary, btnClickedGraphData, audienceOverviewGraphData, signatureCreatedAnalytics, sigantureUseAnalytics, viewOpratingSystem } from '@/service/User/signatureDashbaord';
 
 const timeFilterOptions = [
@@ -107,15 +109,17 @@ const Index = () => {
 
   const handleMenuClick = () => setSidebarOpen(true);
 
+
+  console.log("isMobile", useIsMobile())
   return (
     <SidebarProvider defaultOpen={!isMobile}>
       <div className="flex w-full min-h-screen bg-gradient-to-br from-[#001430] to-[#031a3d] font-sans">
-        
         <MainSidebar open={sidebarOpen} onOpenChange={setSidebarOpen} onCollapseChange={setSidebarCollapsed} />
-        <div className="flex flex-col flex-1 transition-all duration-300 ease-in-out" style={{ width: "100%", marginLeft: isMobile ? 0 : sidebarCollapsed ? '70px' : '250px', paddingBottom: isMobile ? '80px' : '0' }}>
-
+        <div
+          className="flex flex-col flex-1 transition-all duration-300 ease-in-out"
+          style={{ width: "100%", marginLeft: isMobile ? 0 : sidebarCollapsed ? '70px' : '250px' }} >
           <Header onMenuClick={handleMenuClick} />
-          <div className="p-6">
+          <div className="flex flex-col p-4 sm:p-6">
             <DashboardHeader
               title="Dashboard"
               subtitle={`Welcome back, ${userData?.FirstName || ''} ${userData?.LastName || ''}`}
@@ -178,42 +182,46 @@ const Index = () => {
               />
             </div>
 
-            <div className="mt-6">
-              <div className="bg-[#031123] border border-[#112F59] rounded-lg p-6">
-                <h2 className="text-xl font-semibold text-white mb-4">Signature Usage Analytics</h2>
-                <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-[#112F59] scrollbar-track-transparent">
-                  <table className="min-w-[800px] w-full">
-
-                    <thead className="border-b border-[#112F59]">
-                      <tr>
-                        <th className="py-3 px-4 text-left text-white">Signature Name</th>
-                        <th className="py-3 px-4 text-center text-white">Usage Count</th>
-                        <th className="py-3 px-4 text-center text-white">Total Views</th>
-                        <th className="py-3 px-4 text-center text-white">Total Clicks</th>
-                        <th className="py-3 px-4 text-center text-white">Social Clicks</th>
-                        <th className="py-3 px-4 text-center text-white">Button Clicks</th>
-                        <th className="py-3 px-4 text-center text-white">Last Used</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(signatures || []).map((item) => (
-                        <tr key={item._id} className="border-b border-[#112F59] hover:bg-[#051b37]">
-                          <td className="py-4 px-4 text-white">{item.SignatureName}</td>
-                          <td className="py-4 px-4 text-center text-white">{item.usageCount}</td>
-                          <td className="py-4 px-4 text-center text-[#01C8A9]">{item.totalViews}</td>
-                          <td className="py-4 px-4 text-center text-white">{+item.buttonClicks + +item.socialClicks}</td>
-                          <td className="py-4 px-4 text-center text-gray-400">{item.socialClicks}</td>
-                          <td className="py-4 px-4 text-center text-gray-400">{item.buttonClicks}</td>
-                          <td className="py-4 px-4 text-center text-gray-400">{ConvertDate(item.lastUsed)}</td>
+            <div className="grid grid-cols-1 lg:grid-cols-1 gap-6 mt-6">
+              <div className="mt-6">
+                <div className="bg-[#031123] border border-[#112F59] rounded-lg p-6">
+                  <h2 className="text-xl font-semibold text-white mb-4">Signature Usage Analytics</h2>
+                  <div className="w-full overflow-x-auto">
+                    <table className="min-w-[900px] w-full table-auto border-collapse">
+                      <thead className="border-b border-[#112F59]">
+                        <tr>
+                          <th className="py-3 px-4 text-left text-white whitespace-nowrap">Signature Name</th>
+                          <th className="py-3 px-4 text-center text-white whitespace-nowrap">Usage Count</th>
+                          <th className="py-3 px-4 text-center text-white whitespace-nowrap">Total Views</th>
+                          <th className="py-3 px-4 text-center text-white whitespace-nowrap">Total Clicks</th>
+                          <th className="py-3 px-4 text-center text-white whitespace-nowrap">Social Clicks</th>
+                          <th className="py-3 px-4 text-center text-white whitespace-nowrap">Button Clicks</th>
+                          <th className="py-3 px-4 text-center text-white whitespace-nowrap">Last Used</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {(signatures || []).map((item) => (
+                          <tr key={item._id} className="border-b border-[#112F59] hover:bg-[#051b37]">
+                            <td className="py-4 px-4 text-white whitespace-nowrap">{item.SignatureName}</td>
+                            <td className="py-4 px-4 text-center text-white">{item.usageCount}</td>
+                            <td className="py-4 px-4 text-center text-[#01C8A9]">{item.totalViews}</td>
+                            <td className="py-4 px-4 text-center text-white">{+item.buttonClicks + +item.socialClicks}</td>
+                            <td className="py-4 px-4 text-center text-gray-400">{item.socialClicks}</td>
+                            <td className="py-4 px-4 text-center text-gray-400">{item.buttonClicks}</td>
+                            <td className="py-4 px-4 text-center text-gray-400">{ConvertDate(item.lastUsed)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+        {isMobile && (
+          <MobileNavbar  />
+        )}
       </div>
       {/* <TrendingSignaturePopup /> */}
     </SidebarProvider>

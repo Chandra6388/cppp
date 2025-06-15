@@ -115,16 +115,13 @@ const Footer = () => {
               <div className="group">
                 <div className="text-sm text-gray-500 mb-2 font-light">Email</div>
                 <a 
-                  href="mailto:support@prosignature.lovable.app" 
+                  href="mailto:support@prosignature.ai" 
                   className="text-white hover:text-cyan-400 transition-colors duration-300 group-hover:translate-x-1 inline-block transform"
                 >
-                  support@prosignature.lovable.app
+                  support@prosignature.ai
                 </a>
               </div>
-              <div>
-                <div className="text-sm text-gray-500 mb-2 font-light">Location</div>
-                <span className="text-white font-light">India (expanding globally)</span>
-              </div>
+               
               <div>
                 <div className="text-sm text-gray-500 mb-2 font-light">Support</div>
                 <span className="text-white font-light">24/7 Customer Support</span>

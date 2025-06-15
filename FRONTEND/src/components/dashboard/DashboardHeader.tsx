@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar } from "lucide-react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -21,11 +20,19 @@ interface DashboardHeaderProps {
   onApplyDateRange?: (startDate: Date | null, endDate: Date | null) => void;
 }
 
-const DashboardHeader = ({ title, subtitle, timeFilterOptions, selectedTimeFilter, onTimeFilterChange, selectedYear = "", onYearChange = () => { }, onApplyDateRange = () => { }, }: DashboardHeaderProps) => {
+const DashboardHeader = ({
+  title,
+  subtitle,
+  timeFilterOptions,
+  selectedTimeFilter,
+  onTimeFilterChange,
+  selectedYear = "",
+  onYearChange = () => {},
+  onApplyDateRange = () => {},
+}: DashboardHeaderProps) => {
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [showPicker, setShowPicker] = useState(false);
-
 
   const handleApply = () => {
     onApplyDateRange(startDate, endDate);
@@ -33,27 +40,33 @@ const DashboardHeader = ({ title, subtitle, timeFilterOptions, selectedTimeFilte
   };
 
   return (
-    <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 pb-6 border-b border-[#112F59]">
+    <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 pb-6 border-b border-[#112F59] w-full">
       <div>
         <h1 className="text-xl md:text-2xl font-semibold text-white">{title}</h1>
         {subtitle && <p className="text-gray-400 text-sm mt-1">{subtitle}</p>}
       </div>
+
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full sm:w-auto">
-        <Tabs value={selectedTimeFilter} onValueChange={onTimeFilterChange} className="w-full sm:w-auto">
-          <TabsList className="bg-[#051b37] border border-[#112F59] p-1 h-auto overflow-x-auto no-scrollbar whitespace-nowrap">
+        {/* Custom Tabs */}
+        <div className="w-full overflow-x-auto">
+          <div className="flex flex-nowrap gap-2 w-full max-w-full">
             {timeFilterOptions.map((option) => (
-              <TabsTrigger
+              <button
                 key={option.value}
-                value={option.value}
-                className="data-[state=active]:bg-[#01C8A9] data-[state=active]:text-white px-2 sm:px-4 py-1 text-xs sm:text-sm"
+                onClick={() => onTimeFilterChange(option.value)}
+                className={`shrink-0 px-3 py-1 rounded text-xs sm:text-sm border ${
+                  selectedTimeFilter === option.value
+                    ? "bg-[#01C8A9] text-white border-transparent"
+                    : "bg-[#051b37] text-white border-[#112F59]"
+                }`}
               >
                 {option.label}
-              </TabsTrigger>
+              </button>
             ))}
-          </TabsList>
-        </Tabs>
+          </div>
+        </div>
 
-
+        {/* Date Range Button */}
         <div className="relative inline-block text-left w-full sm:w-auto">
           <Button
             variant="outline"
@@ -64,7 +77,7 @@ const DashboardHeader = ({ title, subtitle, timeFilterOptions, selectedTimeFilte
               onTimeFilterChange("custom");
               setShowPicker(!showPicker);
             }}
-            className="ml-auto sm:ml-0 bg-[#051b37] border-[#112F59] text-white hover:bg-[#071f3d]"
+            className="ml-auto sm:ml-0 bg-[#051b37] border-[#112F59] text-white hover:bg-[#071f3d] w-full sm:w-auto"
           >
             <Calendar className="mr-2 h-4 w-4" />
             Custom Range
@@ -114,7 +127,6 @@ const DashboardHeader = ({ title, subtitle, timeFilterOptions, selectedTimeFilte
             </div>
           )}
         </div>
-
       </div>
     </div>
   );

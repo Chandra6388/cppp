@@ -86,7 +86,7 @@ const CreateTicketModal: React.FC<CreateTicketModalProps> = ({ open, onOpenChang
                         <option value="">Select Support Team</option>
                         {employees.map((employee) => (
                           <option key={employee._id} value={employee._id}>
-                            {employee.Username}
+                            {employee.FirstName+ " " + employee?.LastName}
                           </option>
                         ))}
                         
