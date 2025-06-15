@@ -1,13 +1,7 @@
 "use strict";
-
 const mongoose = require("mongoose");
-
-// Define a schema (can be empty or just for reference fields)
 const unreadSupportChatSchema = new mongoose.Schema({}, { strict: false });
-
-// Bind it to the view name (collection name is the same as the view name)
 const UnreadSupportChat = mongoose.model("UnreadSupportChat", unreadSupportChatSchema, "unreadSupportChats");
-
 module.exports = {
   UserDb: require("./users"),
   SignatureDb: require("./signature.model"),
@@ -20,6 +14,11 @@ module.exports = {
   supportChatDb: require('./supportChat.model'),
   NotificationDb: require('./Notification.model'),
   isBroadcastReadDB: require('./isBroadcastRead.model'),
+  blogsDB: require('./blog.model'),
+  ContactUsDb: require('./contactUs.model'),
+
+
+
 
   UnreadSupportChat: UnreadSupportChat
 };

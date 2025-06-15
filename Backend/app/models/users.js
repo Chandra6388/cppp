@@ -15,12 +15,7 @@ const userModel = new Schema({
         trim: true,
         default: null
     },
-    Username: {
-        type: String,
-        required: true,
-        trim: true,
-        default: null
-    },
+    
     profile_img: {
         type: String,
         trim: true,
@@ -36,8 +31,6 @@ const userModel = new Schema({
     PhoneNo: {
         type: String,
         trim: true,
-        minlength: 10,
-        maxlength: 10,
         unique: true,
         default: null
     },

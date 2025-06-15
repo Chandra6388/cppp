@@ -50,17 +50,14 @@ class Auth {
 
     }
     async register(req, res) {
-        const { FirstName, LastName, Username, Email, PhoneNo, Password } = req.body;
-
-
+        const { FirstName, LastName, Email, PhoneNo, Password } = req.body;
         const existingUser = {
             $or: [
                 { Email: Email },
-                { Username: Username },
                 { PhoneNo: PhoneNo }
-
             ]
         };
+        
         const user = await UserDb.findOne(existingUser);
         if (user) {
             return res.send({ status: false, message: "User already exists" });
@@ -68,8 +65,7 @@ class Auth {
         const hashedPassword = await bcrypt.hash(Password, 10);
         const newUser = new UserDb({
             FirstName,
-            LastName,
-            Username,
+            LastName, 
             Email,
             Password: hashedPassword,
             PhoneNo
@@ -205,24 +201,27 @@ class Auth {
     }
 
     async forgotPassword(req, res) {
-        const { Username, Email } = req.body;
+        const { Email } = req.body;
 
-        if (!Username || !Email) {
-            return res.send({ status: false, message: "ID and Email are required." });
+        if (!Email) {
+            return res.send({ status: false, message: "Email id is required." });
         }
-
-        const user = await UserDb.findOne({ Username, Email });
-
+        const user = await UserDb.findOne({Email });
         if (!user) {
             return res.send({ status: false, message: "User not found." });
         }
-
+        console.log("user", user)
+        if (user?.isGoogleLogin) {
+            return res.send({
+                status: false,
+                message: "You signed up using Google. Please use 'Continue with Google' on the login page to sign in. Password reset is not available for Google login accounts."
+              });
+              
+        }
         const token = jwt.sign({ id: user._id }, process.env.SECRET, { expiresIn: '15m' });
-
         user.resetToken = token;
         user.resetTokenExpiry = Date.now() + 15 * 60 * 1000;
         await user.save();
-
         const resetLink = `${process.env.FRONTEND_URL}reset-password`;
         const html = `
             <h2>Hello ${user.FirstName || "User"},</h2>
@@ -249,7 +248,7 @@ class Auth {
         try {
             const info = await transporter.sendMail(mailOptions);
 
-            res.send({ status: true, message: "Reset link sent to email.", token: token });
+            res.send({ status: true, message: "A reset password link has been sent to your email.", token: token });
         } catch (error) {
             console.error("Email Error:", error);
             res.send({ status: false, msg: "Failed to send email.", error: error });

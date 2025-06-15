@@ -15,7 +15,7 @@ class Tickets {
     }
     async getAllEmployees(req, res) {
         try {
-            const employees = await UserDb.find({ Role: 'EMPLOYEE' }).select('Username  _id');
+            const employees = await UserDb.find({ Role: 'EMPLOYEE' }).select('FirstName LastName  _id');
             if (!employees || employees.length === 0) {
                 return res.status(404).send({ status: false, message: "No support team members found.", });
             }

@@ -10,6 +10,9 @@ module.exports = function (app) {
     app.use(require("./user/settingRoutes"));
     app.use(require("./user/notificationRoutes"));
     app.use(require("./imageUploadRoutes"));
+    app.use(require("./admin/blogsRoutes"))
+    app.use(require("./user/contactUsRoutes"))
+
 
 
 
