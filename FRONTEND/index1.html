@@ -1,0 +1,355 @@
+<div class="[&amp;_*]:[transition:all_.3s,font-size_0s]">
+    <div>
+        <table align="center" data-id="__react-email-container" role="presentation" cellspacing="0" cellpadding="0"
+            border="0"
+            style="font-family: Arial;font-size: 16px;margin-left: 0px;margin-right: auto;width: 500px !important; border: 1px solid #bbbbbb;padding: 12px;border-radius: 10px;">
+            <tbody>
+                <tr style="width: 100%;">
+                    <td>
+                        <div class="animate-fade" data-replace-with-children="true">
+                            <table align="center" width="100%" data-id="react-email-row" role="presentation"
+                                cellspacing="0" cellpadding="0" border="0" style="font-size: 100%;">
+                                <tbody style="width: 100%;">
+                                    <tr style="width: 100%; position: relative;">
+                                        <td data-id="__react-email-column"
+                                            style="position: relative; text-align: center; vertical-align: top; width: 160px;">
+                                            <img data-id="react-email-img" src=${formData.headshot_url ||
+                                                userDetails?.profile_img}
+                                                style="display: block;outline: none;border: 1px solid #bbb6b6;text-decoration: none;border-radius: 10px;margin: 0px auto 10px;object-fit: contain;height: 120px;width: 120px;">
+                                            <h3 data-id="react-email-heading"
+                                                style="font-size: 1.125em; font-weight: 700; line-height: 1.5; margin: 0px;">
+                                                ${formData?.fullName}</h3>
+                                            <p data-id="react-email-text"
+                                                style="font-size: 0.75em; line-height: 1.5; margin: 0px;     margin-bottom: 10px;">
+                                                ${formData?.jobTitle || "Profession "}</p>
+                                        </td>
+                                        <td data-id="__react-email-column"
+                                            style="padding-left: 20px; padding-right: 20px; position: relative; vertical-align: top;">
+                                            <table align="center" width="100%" data-id="react-email-row"
+                                                role="presentation" cellspacing="0" cellpadding="0" border="0"
+                                                style=" margin-left: 0px; margin-right: auto; width: auto;">
+                                                <tbody style="width: 100%;">
+                                                    <tr style="width: 100%; position: relative;">
+                                                        <td data-id="__react-email-column"
+                                                            style="padding-right: 4px;position: relative;width: 18px;">
+                                                            <div
+                                                                style="background: #161616; height: 14px; width: 14px;">
+                                                                <img data-id="react-email-img"
+                                                                    src="https://cdn-icons-gif.flaticon.com/8717/8717946.gif"
+                                                                    style="display: block; outline: none; border: none; text-decoration: none; height: 14px; vertical-align: top; width: 14px;">
+                                                            </div>
+                                                        </td>
+                                                        <td data-id="__react-email-column" style="position: relative;">
+                                                            <p data-id="react-email-text"
+                                                                style="font-size: 0.75em;  line-height: 2; margin: 0px;"
+                                                                class="disable-link"><a
+                                                                    href="${`mailto:${formData.email || " #"}`}"
+                                                                    style="color: rgb(51, 51, 51); text-decoration: none;">${formData.email
+                                                                    || ""}</a></p>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                            <table align="center" width="100%" data-id="react-email-row"
+                                                role="presentation" cellspacing="0" cellpadding="0" border="0"
+                                                style=" margin-left: 0px; margin-right: auto; width: auto;">
+                                                <tbody style="width: 100%;">
+                                                    <tr style="width: 100%; position: relative;">
+                                                        <td data-id="__react-email-column"
+                                                            style="padding-right: 4px;position: relative;width: 18px;">
+                                                            <div
+                                                                style="background: #161616; height: 14px;  width: 14px">
+                                                                <img data-id="react-email-img"
+                                                                    src="https://www.logoai.com/email-signature-generator/_next/static/media/mobile.326f1fab.png"
+                                                                    style="display: block; outline: none; border: none; text-decoration: none; height: 14px; vertical-align: top; width: 14px;">
+                                                            </div>
+                                                        </td>
+                                                        <td data-id="__react-email-column" style="position: relative;">
+                                                            <p data-id="react-email-text"
+                                                                style="font-size: 0.75em; line-height: 2; margin: 0px;"
+                                                                class="disable-link"><a
+                                                                    href="${`tel:${formData.phone || " #"}`}"
+                                                                    style="color: rgb(51, 51, 51); text-decoration: none;">${formData.phone
+                                                                    || "Phone"}</a></p>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                            <table align="center" width="100%" data-id="react-email-row"
+                                                role="presentation" cellspacing="0" cellpadding="0" border="0"
+                                                style=" margin-left: 0px; margin-right: auto; width: auto;">
+                                                <tbody style="width: 100%;">
+                                                    <tr style="width: 100%; position: relative;">
+                                                        <td data-id="__react-email-column"
+                                                            style="padding-right: 4px;position: relative;width: 18px;">
+                                                            <div
+                                                                style="background: #161616; height: 14px;  width: 14px">
+                                                                <img data-id="react-email-img"
+                                                                    src="https://www.logoai.com/email-signature-generator/_next/static/media/company.a55f2700.png"
+                                                                    style="display: block; outline: none; border: none; text-decoration: none; height: 14px; vertical-align: top; width: 14px;">
+                                                            </div>
+                                                        </td>
+                                                        <td data-id="__react-email-column" style="position: relative;">
+                                                            <p data-id="react-email-text"
+                                                                style="font-size: 0.75em; line-height: 2; margin: 0px;">
+                                                                ${formData?.company || "Itswin Technology"}</p>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                            <table align="center" width="100%" data-id="react-email-row"
+                                                role="presentation" cellspacing="0" cellpadding="0" border="0"
+                                                style=" margin-left: 0px; margin-right: auto; width: auto;">
+                                                <tbody style="width: 100%;">
+                                                    <tr style="width: 100%; position: relative;">
+                                                        <td data-id="__react-email-column"
+                                                            style="padding-right: 4px;position: relative;width: 18px;">
+                                                            <div
+                                                                style="background: #161616; height: 14px;  width: 14px">
+                                                                <img data-id="react-email-img"
+                                                                    src="https://www.logoai.com/email-signature-generator/_next/static/media/website.bc473089.png"
+                                                                    style="display: block; outline: none; border: none; text-decoration: none; height: 14px; vertical-align: top; width: 14px;">
+                                                            </div>
+                                                        </td>
+                                                        <td data-id="__react-email-column" style="position: relative;">
+                                                            <p data-id="react-email-text"
+                                                                style="font-size: 0.75em; line-height: 2; margin: 0px;"
+                                                                class="disable-link"><a href="${`${formData.website || "
+                                                                    #"}`}" data-id="react-email-link" target="_blank"
+                                                                    style="color: rgb(51, 51, 51); text-decoration: none;">${formData.website
+                                                                    || "website"}</a></p>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                            <table align="center" width="100%" data-id="react-email-row"
+                                                role="presentation" cellspacing="0" cellpadding="0" border="0"
+                                                style="margin-left: 0px; margin-right: auto; width: auto;">
+                                                <tbody style="width: 100%;">
+                                                    <tr style="width: 100%; position: relative;">
+                                                        <td data-id="__react-email-column"
+                                                            style="padding-right: 4px;position: relative;width: 18px;">
+                                                            <div
+                                                                style="background: #161616; height: 14px;  width: 14px">
+                                                                <img data-id="react-email-img"
+                                                                    src="https://www.logoai.com/email-signature-generator/_next/static/media/address.cda8427d.png"
+                                                                    style="display: block; outline: none; border: none; text-decoration: none; height: 14px; vertical-align: top; width: 14px;">
+                                                            </div>
+                                                        </td>
+                                                        <td data-id="__react-email-column" style="position: relative;">
+                                                            <p data-id="react-email-text"
+                                                                style="font-size: 0.75em; line-height: 2; margin: 0px;">
+                                                                ${formData?.address || ""}</p>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                            <table align="center" width="100%" data-id="react-email-row"
+                                                role="presentation" cellspacing="0" cellpadding="0" border="0"
+                                                style="margin-left: 0px; margin-top: 10px; margin-right: auto; width: auto;">
+                                                <tbody style="width: 100%;">
+                                                    <tr style="width: 100%; position: relative;">
+                                                        ${socialMediaHtml3}
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div style="margin-top: 12px;">
+                                ${buttonsHtml}
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+
+<div class="[&amp;_*]:[transition:all_.3s,font-size_0s]" style="background: white;">
+    <div className="signature-wrapper">
+        <table align="center" width="100%" data-id="__react-email-container" role="presentation" cellspacing="0"
+            cellpadding="0" border="0"
+            style="font-family: Arial;font-size: 16px;margin-left: 0px;margin-right: auto;width: 500px !important; border: 1px solid #bbbbbb;padding: 12px;border-radius: 10px">
+            <tbody>
+                <tr style="width: 100%;">
+                    <td>
+                        <div class="animate-fade" data-replace-with-children="true">
+                            <table align="center" width="100%" data-id="react-email-row" role="presentation"
+                                cellspacing="0" cellpadding="0" border="0"
+                                style="font-size: 100%; margin-bottom: 20px;">
+                                <tbody style="width: 100%;">
+                                    <tr style="width: 100%; position: relative;">
+                                        <td data-id="__react-email-column" style="position: relative;">
+                                            <h3 data-id="react-email-heading"
+                                                style="font-size: 1.125em; font-weight: 700; line-height: 1.75; margin: 0px; color: rgb(0, 83, 159);">
+                                                ${formData?.fullName}</h3>
+                                            <p data-id="react-email-text"
+                                                style="font-size: 0.75em; line-height: 1; margin: 0px;">
+                                                ${formData?.jobTitle || "Profession "}</p>
+                                        </td>
+                                        <td data-id="__react-email-column" style="position: relative;">
+                                            <table align="left" width="100%" data-id="react-email-row"
+                                                role="presentation" cellspacing="0" cellpadding="0" border="0"
+                                                style="margin-left: auto; margin-right: 0px; width: auto;">
+                                                <tbody>
+                                                    <tr style="width: 100%; position: relative;">
+                                                        ${socialMediaHtml3}
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <table align="center" width="100%" data-id="react-email-row" role="presentation"
+                                cellspacing="0" cellpadding="0" border="0" style="font-size: 100%;">
+                                <tbody style="width: 100%;">
+                                    <tr style="width: 100%; position: relative;">
+                                        <td data-id="__react-email-column"
+                                            style="position: relative; text-align: center; vertical-align: top; width: 160px;">
+                                            <img data-id="react-email-img" src=${formData.headshot_url ||
+                                                userDetails?.profile_img}
+                                                style="display: block;outline: none;border: 1px solid #bbb6b6;text-decoration: none;border-radius: 10px;margin: 0px auto 10px;object-fit: contain;height: 120px;width: 120px;">
+                                            
+                                        </td>
+                                        <td data-id="__react-email-column"
+                                            style="padding-left: 20px; padding-right: 20px; position: relative; vertical-align: top;">
+                                            <table align="center" width="100%" data-id="react-email-row"
+                                                role="presentation" cellspacing="0" cellpadding="0" border="0"
+                                                style=" margin-left: 0px; margin-right: auto; width: auto;">
+                                                <tbody style="width: 100%;">
+                                                    <tr style="width: 100%; position: relative;">
+                                                        <td data-id="__react-email-column"
+                                                            style="padding-right: 4px;position: relative;width: 18px;">
+                                                            <div
+                                                                style="background: #161616; height: 14px; width: 14px;">
+                                                                <img data-id="react-email-img"
+                                                                    src="https://cdn-icons-gif.flaticon.com/8717/8717946.gif"
+                                                                    style="display: block; outline: none; border: none; text-decoration: none; height: 14px; vertical-align: top; width: 14px;">
+                                                            </div>
+                                                        </td>
+                                                        <td data-id="__react-email-column" style="position: relative;">
+                                                            <p data-id="react-email-text"
+                                                                style="font-size: 0.75em;  line-height: 2; margin: 0px;"
+                                                                class="disable-link"><a
+                                                                    href="${`mailto:${formData.email || " #"}`}"
+                                                                    style="color: rgb(51, 51, 51); text-decoration: none;">${formData.email
+                                                                    || ""}</a></p>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                            <table align="center" width="100%" data-id="react-email-row"
+                                                role="presentation" cellspacing="0" cellpadding="0" border="0"
+                                                style=" margin-left: 0px; margin-right: auto; width: auto;">
+                                                <tbody style="width: 100%;">
+                                                    <tr style="width: 100%; position: relative;">
+                                                        <td data-id="__react-email-column"
+                                                            style="padding-right: 4px;position: relative;width: 18px;">
+                                                            <div
+                                                                style="background: #161616; height: 14px;  width: 14px">
+                                                                <img data-id="react-email-img"
+                                                                    src="https://www.logoai.com/email-signature-generator/_next/static/media/mobile.326f1fab.png"
+                                                                    style="display: block; outline: none; border: none; text-decoration: none; height: 14px; vertical-align: top; width: 14px;">
+                                                            </div>
+                                                        </td>
+                                                        <td data-id="__react-email-column" style="position: relative;">
+                                                            <p data-id="react-email-text"
+                                                                style="font-size: 0.75em; line-height: 2; margin: 0px;"
+                                                                class="disable-link"><a
+                                                                    href="${`tel:${formData.phone || " #"}`}"
+                                                                    style="color: rgb(51, 51, 51); text-decoration: none;">${formData.phone
+                                                                    || "Phone"}</a></p>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                            <table align="center" width="100%" data-id="react-email-row"
+                                                role="presentation" cellspacing="0" cellpadding="0" border="0"
+                                                style=" margin-left: 0px; margin-right: auto; width: auto;">
+                                                <tbody style="width: 100%;">
+                                                    <tr style="width: 100%; position: relative;">
+                                                        <td data-id="__react-email-column"
+                                                            style="padding-right: 4px;position: relative;width: 18px;">
+                                                            <div
+                                                                style="background: #161616; height: 14px;  width: 14px">
+                                                                <img data-id="react-email-img"
+                                                                    src="https://www.logoai.com/email-signature-generator/_next/static/media/company.a55f2700.png"
+                                                                    style="display: block; outline: none; border: none; text-decoration: none; height: 14px; vertical-align: top; width: 14px;">
+                                                            </div>
+                                                        </td>
+                                                        <td data-id="__react-email-column" style="position: relative;">
+                                                            <p data-id="react-email-text"
+                                                                style="font-size: 0.75em; line-height: 2; margin: 0px;">
+                                                                ${formData?.company || "Itswin Technology"}</p>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                            <table align="center" width="100%" data-id="react-email-row"
+                                                role="presentation" cellspacing="0" cellpadding="0" border="0"
+                                                style=" margin-left: 0px; margin-right: auto; width: auto;">
+                                                <tbody style="width: 100%;">
+                                                    <tr style="width: 100%; position: relative;">
+                                                        <td data-id="__react-email-column"
+                                                            style="padding-right: 4px;position: relative;width: 18px;">
+                                                            <div
+                                                                style="background: #161616; height: 14px;  width: 14px">
+                                                                <img data-id="react-email-img"
+                                                                    src="https://www.logoai.com/email-signature-generator/_next/static/media/website.bc473089.png"
+                                                                    style="display: block; outline: none; border: none; text-decoration: none; height: 14px; vertical-align: top; width: 14px;">
+                                                            </div>
+                                                        </td>
+                                                        <td data-id="__react-email-column" style="position: relative;">
+                                                            <p data-id="react-email-text"
+                                                                style="font-size: 0.75em; line-height: 2; margin: 0px;"
+                                                                class="disable-link"><a href=${formData.website || "#"} data-id="react-email-link" target="_blank"
+                                                                    style="color: rgb(51, 51, 51); text-decoration: none;">${formData.website
+                                                                    || "website"}</a></p>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                            <table align="center" width="100%" data-id="react-email-row"
+                                                role="presentation" cellspacing="0" cellpadding="0" border="0"
+                                                style="margin-left: 0px; margin-right: auto; width: auto;">
+                                                <tbody style="width: 100%;">
+                                                    <tr style="width: 100%; position: relative;">
+                                                        <td data-id="__react-email-column"
+                                                            style="padding-right: 4px;position: relative;width: 18px;">
+                                                            <div
+                                                                style="background: #161616; height: 14px;  width: 14px">
+                                                                <img data-id="react-email-img"
+                                                                    src="https://www.logoai.com/email-signature-generator/_next/static/media/address.cda8427d.png"
+                                                                    style="display: block; outline: none; border: none; text-decoration: none; height: 14px; vertical-align: top; width: 14px;">
+                                                            </div>
+                                                        </td>
+                                                        <td data-id="__react-email-column" style="position: relative;">
+                                                            <p data-id="react-email-text"
+                                                                style="font-size: 0.75em; line-height: 2; margin: 0px;">
+                                                                ${formData?.address || ""}</p>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                           
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div style="margin-top: 12px;">
+                                ${buttonsHtml}
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
